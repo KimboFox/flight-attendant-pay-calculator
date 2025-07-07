@@ -609,6 +609,7 @@
             font-size: 1.75rem;
             border: none;
             padding: 0;
+            padding-bottom: 5px;
         }
         
         @media (max-width: 480px) {
@@ -1083,6 +1084,60 @@
                 gap: 16px;
             }
         }
+
+        /* Add to <style> section */
+        .tooltip-icon {
+          display: inline-block;
+          margin-left: 6px;
+          color: var(--primary-dark, #3a36e0);
+          background: #fff;
+          border-radius: 50%;
+          width: 1em;
+          height: 1em;
+          font-size: 0.9em;
+          text-align: center;
+          line-height: 1em;
+          cursor: pointer;
+          position: relative;
+          border: 1px solid var(--primary-dark, #3a36e0);
+          font-weight: bold;
+          vertical-align: middle;
+        }
+        .tooltip-icon:focus,
+        .tooltip-icon:hover {
+          background: var(--primary-light, #6d6aff);
+          color: #fff;
+          outline: none;
+        }
+        .tooltip-text {
+          display: none;
+          position: absolute;
+          left: 50%;
+          top: -38px;
+          transform: translateX(-50%);
+          background: #222;
+          color: #fff;
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 0.85em;
+          white-space: pre-line;
+          z-index: 100;
+          min-width: 180px;
+          text-align: center;
+          pointer-events: none;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .tooltip-icon:hover .tooltip-text,
+        .tooltip-icon:focus .tooltip-text {
+          display: block;
+        }
+        @media (max-width: 480px) {
+          .tooltip-text {
+            min-width: 120px;
+            font-size: 0.95em;
+            padding: 8px 6px;
+          }
+        }
     </style>
 </head>
 <body>
@@ -1096,6 +1151,11 @@
             <div class="app-title">
                 <div class="app-logo">FT</div>
                 <h1>Flight Trip Comparison Tool</h1>
+            </div>
+            <div class="header-kofi" style="flex:1;display:flex;justify-content:center;align-items:center;min-width:180px;">
+                <div id="kofi-widget" style="display:inline-block;"></div>
+                <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+                <script type='text/javascript'>kofiwidget2.init('Help me keep this running!✈️', '#d503ff', 'V7V61HOIHV', 'kofi-widget');kofiwidget2.draw();</script>
             </div>
             <div class="header-actions">
                 <button id="clear-all-btn" class="btn btn-outline" aria-label="Clear all trips">Clear All</button>
@@ -1207,9 +1267,9 @@
                         <div class="form-group">
                             <label for="aircraft-type">Aircraft Type</label>
                             <select id="aircraft-type" class="form-control">
-                                <option value="Narrow1">Narrow1</option>
-                                <option value="Narrow2">Narrow2</option>
-                                <option value="Wide">Wide</option>
+                                <option value="Narrow1">A319 / A320 / B737‑700</option>
+                                <option value="Narrow2">B737‑800 / 900 / MAX / B‑757 / A321</option>
+                                <option value="Wide">Widebody</option>
                             </select>
                         </div>
 
@@ -1265,13 +1325,43 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="intl-pay-override-label-text">International Override?</label>
+                        <label id="intl-pay-override-label-text">International Override?
+                          <span class="tooltip-icon" tabindex="0">?
+                            <span class="tooltip-text">Outside the continental U.S. and Canada</span>
+                          </span>
+                        </label>
                         <div class="toggle-container">
                             <label class="toggle-switch">
                                 <input type="checkbox" id="intl-pay-override">
                                 <span class="toggle-slider" tabindex="0" role="switch" aria-checked="false" aria-labelledby="intl-pay-override-label-text"></span>
                             </label>
                             <span class="toggle-label" id="intl-pay-override-label">No</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="holiday-pay-label-text">Holiday Pay?</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="holiday-pay">
+                                <span class="toggle-slider" tabindex="0" role="switch" aria-checked="false" aria-labelledby="holiday-pay-label-text"></span>
+                            </label>
+                            <span class="toggle-label" id="holiday-pay-label">No</span>
+                        </div>
+                    </div>
+
+                    <div class="conditional-form-group" id="holiday-hours-group">
+                        <div class="form-group">
+                            <label for="holiday-hours" id="holiday-hours-label-text">Hours on Holiday
+                              <span class="tooltip-icon" tabindex="0">?
+                                <span class="tooltip-text">To calculate holiday hours: figure out how many of your trip's away‑from‑home (TAFB) hours fall between 00:00 and 23:59 on the holiday. If your trip starts or ends on the holiday, only count the overlapping hours.</span>
+                              </span>
+                            </label>
+                            <input type="number" id="holiday-hours" class="form-control" min="0" step="0.01" value="0" aria-describedby="holiday-hours-validation holiday-hours-example">
+                            <div class="validation-message" id="holiday-hours-validation" role="alert" aria-live="assertive">Holiday hours cannot exceed TAFB time</div>
+                            <div class="form-help-text" id="holiday-hours-example" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
+                              Example: Trip starts Dec 24 at 22:00 and ends Dec 26 at 14:00. Dec 25 is the holiday. Holiday hours = 24 (all hours between midnight and 23:59 on Dec 25).
+                            </div>
                         </div>
                     </div>
 
@@ -1300,7 +1390,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="intl-override-label-text">International Per Diem?</label>
+                        <label id="intl-override-label-text">International Per Diem?
+                          <span class="tooltip-icon" tabindex="0">?
+                            <span class="tooltip-text">Destinations outside of U.S., Canada, Mexico, Central America, Caribbean</span>
+                          </span>
+                        </label>
                         <div class="toggle-container">
                             <label class="toggle-switch">
                                 <input type="checkbox" id="intl-override">
@@ -1568,6 +1662,25 @@
                         FlightApp.elements.purserNonUSHoursInput.removeAttribute('aria-invalid');
                     }
                     
+                    // Validate holiday hours against TAFB time
+                    const thH = parseInt(FlightApp.elements.tafbHoursInput.value, 10) || 0;
+                    const thM = parseInt(FlightApp.elements.tafbMinutesInput.value, 10) || 0;
+                    const tafbHours = thH + (thM / 60);
+                    
+                    const holidayHours = FlightApp.elements.holidayPayToggle.checked ? 
+                        Math.max(0, parseFloat(FlightApp.elements.holidayHoursInput.value) || 0) : 0;
+                    
+                    if (FlightApp.elements.holidayPayToggle.checked && holidayHours > tafbHours) {
+                        const message = `Holiday hours (${holidayHours.toFixed(2)}) cannot exceed TAFB time (${tafbHours.toFixed(2)})`;
+                        FlightApp.elements.holidayHoursValidation.textContent = message;
+                        FlightApp.elements.holidayHoursValidation.style.display = 'block';
+                        FlightApp.elements.holidayHoursInput.setAttribute('aria-invalid', 'true');
+                        return false;
+                    } else {
+                        FlightApp.elements.holidayHoursValidation.style.display = 'none';
+                        FlightApp.elements.holidayHoursInput.removeAttribute('aria-invalid');
+                    }
+                    
                     return isValid;
                 } catch (error) {
                     console.error('Error validating hours:', error);
@@ -1629,6 +1742,7 @@
                 setupToggle('purser-pay');
                 setupToggle('intl-override');
                 setupToggle('intl-pay-override');
+                setupToggle('holiday-pay');
             },
 
             // Calculate trip pay
@@ -1659,6 +1773,7 @@
                     const hasPurserPay = tripData.purserPay === 'Yes';
                     const hasIntlOverride = tripData.intlOverride === 'Yes';
                     const hasIntlPayOverride = tripData.intlPayOverride === 'Yes';
+                    const hasHolidayPay = tripData.holidayPay === 'Yes';
                     
                     // Special hours
                     const ghH = hasGalleyPay ? (parseInt(tripData.galleyHoursHours, 10) || 0) : 0;
@@ -1667,6 +1782,8 @@
                     
                     const purserUSHours = hasPurserPay ? (parseFloat(tripData.purserUSHours) || 0) : 0;
                     const purserNonUSHours = hasPurserPay ? (parseFloat(tripData.purserNonUSHours) || 0) : 0;
+                    
+                    const holidayHours = hasHolidayPay ? (parseFloat(tripData.holidayHours) || 0) : 0;
                     
                     // Additional settings
                     const aircraftType = tripData.aircraftType || 'Narrow1';
@@ -1712,9 +1829,15 @@
 
                     const intlOverridePay = hasIntlPayOverride ? creditedHours * 2 : 0;
                     const perDiem = dutyHours * perDiemRate;
+                    
+                    // Calculate holiday pay: (Hourly Rate × Credited Hours) ÷ TAFB × Holiday Hours
+                    let holidayPay = 0;
+                    if (hasHolidayPay && dutyHours > 0) {
+                        holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
+                    }
 
                     // Calculate totals
-                    const totalGrossPay = basePay + galleyPay + purserPay + intlOverridePay + perDiem;
+                    const totalGrossPay = basePay + galleyPay + purserPay + intlOverridePay + perDiem + holidayPay;
                     const retirementDeduction = totalGrossPay * (retirementPercentage / 100);
                     const netBeforeTax = totalGrossPay - retirementDeduction;
                     const netPayEstimate = netBeforeTax * (1 - taxRate / 100);
@@ -1731,6 +1854,7 @@
                         purserPay,
                         intlOverridePay,
                         perDiem,
+                        holidayPay,
                         totalGrossPay,
                         netPayEstimate,
                         hourlyValue,
@@ -1739,7 +1863,7 @@
 
                     console.log(`Trip calculation for ${tripData.name}:`, {
                         payYear, creditedHours, dutyHours, tripLength,
-                        perDiemRate, basePay, galleyPay, purserPay, intlOverridePay, perDiem,
+                        perDiemRate, basePay, galleyPay, purserPay, intlOverridePay, perDiem, holidayPay,
                         totalGrossPay, netPayEstimate, hourlyValue, perDayValue
                     });
 
@@ -1761,6 +1885,7 @@
                     purserPay: 0,
                     intlOverridePay: 0,
                     perDiem: 0,
+                    holidayPay: 0,
                     totalGrossPay: 0,
                     netPayEstimate: 0,
                     hourlyValue: 0,
@@ -1863,6 +1988,7 @@
                 FlightApp.elements.galleyHoursValidation.style.display = 'none';
                 FlightApp.elements.purserUSHoursValidation.style.display = 'none';
                 FlightApp.elements.purserNonUSHoursValidation.style.display = 'none';
+                FlightApp.elements.holidayHoursValidation.style.display = 'none';
                 
                 // Reset aria-invalid attributes
                 const formInputs = FlightApp.elements.tripForm.querySelectorAll('input, select');
@@ -1885,6 +2011,7 @@
                 FlightApp.updateToggleLabel(FlightApp.elements.purserPayToggle, FlightApp.elements.purserPayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlOverrideToggle, FlightApp.elements.intlOverrideLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlPayOverrideToggle, FlightApp.elements.intlPayOverrideLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.holidayPayToggle, FlightApp.elements.holidayPayLabel);
                 
                 FlightApp.toggleConditionalFields();
                 console.log('Form reset');
@@ -1905,9 +2032,15 @@
                 FlightApp.elements.purserUSHoursInput.disabled = !showPurserFields;
                 FlightApp.elements.purserNonUSHoursInput.disabled = !showPurserFields;
                 
+                // Holiday Hours
+                const showHolidayHours = FlightApp.elements.holidayPayToggle.checked;
+                FlightApp.elements.holidayHoursGroup.style.display = showHolidayHours ? 'block' : 'none';
+                FlightApp.elements.holidayHoursInput.disabled = !showHolidayHours;
+                
                 console.log('Conditional fields updated:', {
                     galleyHoursVisible: showGalleyHours,
-                    purserFieldsVisible: showPurserFields
+                    purserFieldsVisible: showPurserFields,
+                    holidayHoursVisible: showHolidayHours
                 });
             },
 
@@ -2103,6 +2236,11 @@
                     }
                     
                     summaryDiv.appendChild(createSummaryItem('Per Diem', FlightApp.utils.formatCurrency(calculation.perDiem)));
+                    
+                    if (calculation.holidayPay > 0) {
+                        summaryDiv.appendChild(createSummaryItem('Holiday Pay', FlightApp.utils.formatCurrency(calculation.holidayPay)));
+                    }
+                    
                     summaryDiv.appendChild(createSummaryItem('Gross Pay', FlightApp.utils.formatCurrency(calculation.totalGrossPay), true));
                     
                     // Net pay estimate (conditional)
@@ -2442,6 +2580,8 @@
                 FlightApp.elements.purserNonUSHoursInput.value = trip.purserNonUSHours || 0;
                 FlightApp.elements.intlOverrideToggle.checked = trip.intlOverride === 'Yes';
                 FlightApp.elements.intlPayOverrideToggle.checked = trip.intlPayOverride === 'Yes';
+                FlightApp.elements.holidayPayToggle.checked = trip.holidayPay === 'Yes';
+                FlightApp.elements.holidayHoursInput.value = trip.holidayHours || 0;
                 FlightApp.elements.retirementPercentageInput.value = trip.retirementPercentage;
                 FlightApp.elements.taxRateInput.value = trip.taxRate;
                 
@@ -2451,6 +2591,7 @@
                 FlightApp.updateToggleLabel(FlightApp.elements.purserPayToggle, FlightApp.elements.purserPayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlOverrideToggle, FlightApp.elements.intlOverrideLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlPayOverrideToggle, FlightApp.elements.intlPayOverrideLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.holidayPayToggle, FlightApp.elements.holidayPayLabel);
                 
                 // Show conditional fields
                 FlightApp.toggleConditionalFields();
@@ -2606,6 +2747,8 @@
                     purserNonUSHours: FlightApp.elements.purserNonUSHoursInput.value,
                     intlOverride: FlightApp.elements.intlOverrideToggle.checked ? 'Yes' : 'No',
                     intlPayOverride: FlightApp.elements.intlPayOverrideToggle.checked ? 'Yes' : 'No',
+                    holidayPay: FlightApp.elements.holidayPayToggle.checked ? 'Yes' : 'No',
+                    holidayHours: FlightApp.elements.holidayHoursInput.value,
                     retirementPercentage: FlightApp.elements.retirementPercentageInput.value,
                     taxRate: FlightApp.elements.taxRateInput.value
                 };
@@ -2667,6 +2810,7 @@
                     FlightApp.elements.galleyHoursMinutesInput,
                     FlightApp.elements.purserUSHoursInput,
                     FlightApp.elements.purserNonUSHoursInput,
+                    FlightApp.elements.holidayHoursInput,
                     FlightApp.elements.retirementPercentageInput,
                     FlightApp.elements.taxRateInput
                 ];
@@ -2839,6 +2983,11 @@
                 FlightApp.elements.intlPayOverrideLabel = document.getElementById('intl-pay-override-label');
                 FlightApp.elements.retirementPercentageInput = document.getElementById('retirement-percentage');
                 FlightApp.elements.taxRateInput = document.getElementById('tax-rate');
+                FlightApp.elements.holidayPayToggle = document.getElementById('holiday-pay');
+                FlightApp.elements.holidayPayLabel = document.getElementById('holiday-pay-label');
+                FlightApp.elements.holidayHoursGroup = document.getElementById('holiday-hours-group');
+                FlightApp.elements.holidayHoursInput = document.getElementById('holiday-hours');
+                FlightApp.elements.holidayHoursValidation = document.getElementById('holiday-hours-validation');
                 
                 // Buttons
                 FlightApp.elements.saveTripBtn = document.getElementById('save-trip-btn');
