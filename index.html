@@ -59,19 +59,20 @@
         }
 
         html, body {
-            height: 100%;
+            min-height: 100%;
             background-color: var(--background);
             color: var(--text);
             font-size: 16px;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
         }
 
         .app-container {
             display: flex;
             flex-direction: column;
-            height: 100%;
+            min-height: 100vh;
             max-width: 1920px;
             margin: 0 auto;
         }
@@ -132,21 +133,24 @@
 
         /* Main content */
         .main-content {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
+            display: flex;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
 
         /* Trip comparison container */
         .trip-comparison {
             flex: 1;
-            overflow-x: auto;
+            overflow-y: auto;
+            overflow-x: hidden;
             padding: 24px;
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             justify-content: center;
+            min-height: 0;
         }
 
         .no-trips-message {
@@ -643,7 +647,6 @@
             background-color: var(--surface);
             border-radius: var(--radius-lg);
             box-shadow: var(--shadow);
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             transition: var(--transition);
@@ -854,8 +857,9 @@
             flex-direction: column;
             gap: 8px;
             z-index: 9999;
+            pointer-events: none; /* Allow clicks to pass through to content below */
         }
-
+        
         .toast {
             padding: 12px 16px;
             border-radius: var(--radius);
@@ -870,6 +874,7 @@
             gap: 12px;
             animation: slideIn 0.3s ease forwards;
             border-left: 4px solid var(--info);
+            pointer-events: auto; /* Re-enable pointer events for the toast itself */
         }
         
         @media (max-width: 480px) {
@@ -946,6 +951,7 @@
             .trip-comparison {
                 padding: 16px;
                 gap: 16px;
+                padding-bottom: 100px; /* Add bottom padding to account for fixed add button */
             }
             
             .header {
@@ -1013,7 +1019,8 @@
                 flex-direction: column;
                 align-items: stretch;
                 gap: 24px;
-                padding: 20px 8px 80px 8px;
+                padding: 20px 8px 100px 8px; /* Increased bottom padding */
+                overflow-y: auto;
             }
             .trip-card {
                 min-width: 90vw;
@@ -1051,8 +1058,9 @@
                 flex-direction: row;
                 flex-wrap: wrap;
                 gap: 12px;
-                padding: 8px 24px 24px 24px;
+                padding: 8px 24px 100px 24px; /* Increased bottom padding */
                 align-items: flex-start;
+                overflow-y: auto;
             }
             .trip-card {
                 min-width: 320px;
@@ -1089,7 +1097,7 @@
         .tooltip-icon {
           display: inline-block;
           margin-left: 6px;
-          color: var(--primary-dark, #3a36e0);
+          color: #3a36e0;
           background: #fff;
           border-radius: 50%;
           width: 1em;
@@ -1099,44 +1107,34 @@
           line-height: 1em;
           cursor: pointer;
           position: relative;
-          border: 1px solid var(--primary-dark, #3a36e0);
+          border: 1px solid #3a36e0;
           font-weight: bold;
           vertical-align: middle;
         }
-        .tooltip-icon:focus,
-        .tooltip-icon:hover {
-          background: var(--primary-light, #6d6aff);
-          color: #fff;
-          outline: none;
-        }
+
         .tooltip-text {
           display: none;
           position: absolute;
           left: 50%;
-          top: -38px;
+          top: -45px;
           transform: translateX(-50%);
           background: #222;
           color: #fff;
-          padding: 6px 10px;
+          padding: 2.5px 10px;
           border-radius: 6px;
           font-size: 0.85em;
           white-space: pre-line;
           z-index: 100;
-          min-width: 180px;
+          min-width: 140px;
+          max-width: 260px;
           text-align: center;
           pointer-events: none;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          box-sizing: border-box;
         }
+
         .tooltip-icon:hover .tooltip-text,
         .tooltip-icon:focus .tooltip-text {
           display: block;
-        }
-        @media (max-width: 480px) {
-          .tooltip-text {
-            min-width: 120px;
-            font-size: 0.95em;
-            padding: 8px 6px;
-          }
         }
     </style>
 </head>
@@ -1206,15 +1204,40 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="flag-rate-label-text">White/Purple Flag?</label>
-                        <div class="toggle-container">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="flag-rate">
-                                <span class="toggle-slider" tabindex="0" role="switch" aria-checked="false" aria-labelledby="flag-rate-label-text"></span>
-                            </label>
-                            <span class="toggle-label" id="flag-rate-label">No</span>
-                        </div>
+                      <label id="white-flag-label-text">White Flag</label>
+                      <div class="toggle-container">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="white-flag">
+                          <span class="toggle-slider" tabindex="0" role="switch" aria-checked="false" aria-labelledby="white-flag-label-text"></span>
+                        </label>
+                        <span class="toggle-label" id="white-flag-label">No</span>
+                      </div>
                     </div>
+
+                    <div class="form-group">
+                      <label id="purple-flag-label-text">Purple Flag</label>
+                      <div class="toggle-container">
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="purple-flag">
+                          <span class="toggle-slider" tabindex="0" role="switch" aria-checked="false" aria-labelledby="purple-flag-label-text"></span>
+                        </label>
+                        <span class="toggle-label" id="purple-flag-label">No</span>
+                      </div>
+                    </div>
+
+                    <div class="conditional-form-group" id="purple-flag-dropdown-group" style="display:none;">
+                      <div class="form-group">
+                        <label for="purple-flag-premium">Purple Flag Premium</label>
+                        <select id="purple-flag-premium" class="form-control">
+                          <option value="1.5">150%</option>
+                          <option value="2">200%</option>
+                          <option value="2.5">250%</option>
+                          <option value="3">300%</option>
+                        </select>
+                      </div>
+                    </div>
+
+
 
                     <div class="form-group">
                         <label for="trip-length">Trip Length (Days)</label>
@@ -1253,7 +1276,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Purser Pay?</label>
+                        <label>Purser Pay</label>
                         <div class="toggle-container">
                             <label class="toggle-switch">
                                 <input type="checkbox" id="purser-pay">
@@ -1287,7 +1310,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Galley Pay?</label>
+                        <label>Galley Pay</label>
                         <div class="toggle-container">
                             <label class="toggle-switch">
                                 <input type="checkbox" id="galley-pay">
@@ -1325,7 +1348,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="intl-pay-override-label-text">International Override?
+                        <label id="intl-pay-override-label-text">International Override
                           <span class="tooltip-icon" tabindex="0">?
                             <span class="tooltip-text">Outside the continental U.S. and Canada</span>
                           </span>
@@ -1340,7 +1363,18 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="holiday-pay-label-text">Holiday Pay?</label>
+                        <label id="language-pay-label-text">Language Pay</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="language-pay">
+                                <span class="toggle-slider" tabindex="0" role="switch" aria-checked="false" aria-labelledby="language-pay-label-text"></span>
+                            </label>
+                            <span class="toggle-label" id="language-pay-label">No</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label id="holiday-pay-label-text">Holiday Pay</label>
                         <div class="toggle-container">
                             <label class="toggle-switch">
                                 <input type="checkbox" id="holiday-pay">
@@ -1351,18 +1385,21 @@
                     </div>
 
                     <div class="conditional-form-group" id="holiday-hours-group">
-                        <div class="form-group">
-                            <label for="holiday-hours" id="holiday-hours-label-text">Hours on Holiday
-                              <span class="tooltip-icon" tabindex="0">?
-                                <span class="tooltip-text">To calculate holiday hours: figure out how many of your trip's away‑from‑home (TAFB) hours fall between 00:00 and 23:59 on the holiday. If your trip starts or ends on the holiday, only count the overlapping hours.</span>
-                              </span>
-                            </label>
-                            <input type="number" id="holiday-hours" class="form-control" min="0" step="0.01" value="0" aria-describedby="holiday-hours-validation holiday-hours-example">
-                            <div class="validation-message" id="holiday-hours-validation" role="alert" aria-live="assertive">Holiday hours cannot exceed TAFB time</div>
-                            <div class="form-help-text" id="holiday-hours-example" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
-                              Example: Trip starts Dec 24 at 22:00 and ends Dec 26 at 14:00. Dec 25 is the holiday. Holiday hours = 24 (all hours between midnight and 23:59 on Dec 25).
-                            </div>
+                      <div class="form-group">
+                        <label for="holiday-hours">
+                          Hours on Holiday
+                          <span class="tooltip-icon" tabindex="0">?
+                            <span class="tooltip-text">
+                              Holiday hours = TAFB hours overlapping the holiday.
+                            </span>
+                          </span>
+                        </label>
+                        <input type="number" id="holiday-hours" name="holiday-hours" class="form-control" min="0" max="24" value="0" />
+                        <div class="validation-message" id="holiday-hours-validation" role="alert" aria-live="assertive" style="display:none;">Maximum is 24 hours</div>
+                        <div class="form-help-text" id="holiday-hours-example" style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px; line-height: 1.4;">
+                          E.g., Trip: Dec 24 @ 22:00 → Dec 26 @ 14:00. Holiday (Dec 25): 24 hours.
                         </div>
+                      </div>
                     </div>
 
                     <div class="form-group">
@@ -1390,7 +1427,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="intl-override-label-text">International Per Diem?
+                        <label id="intl-override-label-text">International Per Diem
                           <span class="tooltip-icon" tabindex="0">?
                             <span class="tooltip-text">Destinations outside of U.S., Canada, Mexico, Central America, Caribbean</span>
                           </span>
@@ -1716,7 +1753,7 @@
                         FlightApp.updateToggleLabel(toggle, toggleLabel);
                         
                         // Call additional handlers if needed
-                        if (toggleId === 'galley-pay' || toggleId === 'purser-pay') {
+                        if (toggleId === 'purple-flag' || toggleId === 'galley-pay' || toggleId === 'purser-pay' || toggleId === 'holiday-pay') {
                             FlightApp.toggleConditionalFields();
                         }
                     });
@@ -1737,11 +1774,13 @@
                 };
                 
                 // Setup all toggles
-                setupToggle('flag-rate');
+                setupToggle('white-flag');
+                setupToggle('purple-flag');
                 setupToggle('galley-pay');
                 setupToggle('purser-pay');
                 setupToggle('intl-override');
                 setupToggle('intl-pay-override');
+                setupToggle('language-pay');
                 setupToggle('holiday-pay');
             },
 
@@ -1755,7 +1794,19 @@
                     }
 
                     const payYear = tripData.payYear || 'Year 1';
-                    const usesFlagRate = tripData.flagRate === 'Yes';
+                    
+                    // Get flag premium multiplier from the new white/purple flag system
+                    const whiteFlagEnabled = tripData.whiteFlag === true || tripData.whiteFlag === 'Yes';
+                    const purpleFlagEnabled = tripData.purpleFlag === true || tripData.purpleFlag === 'Yes';
+                    const purpleFlagPremium = parseFloat(tripData.purpleFlagPremium) || 1.5;
+                    
+                    let flagPremiumMultiplier = 1;
+                    if (whiteFlagEnabled) {
+                        flagPremiumMultiplier *= 1.5;
+                    }
+                    if (purpleFlagEnabled) {
+                        flagPremiumMultiplier *= purpleFlagPremium;
+                    }
                     
                     // Parse and validate numeric inputs
                     const chH = parseInt(tripData.creditedHoursHours, 10) || 0;
@@ -1773,6 +1824,7 @@
                     const hasPurserPay = tripData.purserPay === 'Yes';
                     const hasIntlOverride = tripData.intlOverride === 'Yes';
                     const hasIntlPayOverride = tripData.intlPayOverride === 'Yes';
+                    const hasLanguagePay = tripData.languagePay === 'Yes';
                     const hasHolidayPay = tripData.holidayPay === 'Yes';
                     
                     // Special hours
@@ -1798,8 +1850,7 @@
 
                     // Get rates
                     const baseRate = FlightApp.masterPayData[payYear].baseRate;
-                    const flagRate = FlightApp.masterPayData[payYear].flagRate;
-                    const effectiveRate = usesFlagRate ? flagRate : baseRate;
+                    const effectiveRate = baseRate * flagPremiumMultiplier;
                     
                     // Per diem rate based on international status
                     const perDiemRate = hasIntlOverride ? FlightApp.constants.INTERNATIONAL_PER_DIEM_RATE : FlightApp.constants.DOMESTIC_PER_DIEM_RATE;
@@ -1828,6 +1879,7 @@
                     }
 
                     const intlOverridePay = hasIntlPayOverride ? creditedHours * 2 : 0;
+                    const languagePay = hasLanguagePay ? creditedHours * 2.50 : 0;
                     const perDiem = dutyHours * perDiemRate;
                     
                     // Calculate holiday pay: (Hourly Rate × Credited Hours) ÷ TAFB × Holiday Hours
@@ -1837,7 +1889,7 @@
                     }
 
                     // Calculate totals
-                    const totalGrossPay = basePay + galleyPay + purserPay + intlOverridePay + perDiem + holidayPay;
+                    const totalGrossPay = basePay + galleyPay + purserPay + intlOverridePay + languagePay + perDiem + holidayPay;
                     const retirementDeduction = totalGrossPay * (retirementPercentage / 100);
                     const netBeforeTax = totalGrossPay - retirementDeduction;
                     const netPayEstimate = netBeforeTax * (1 - taxRate / 100);
@@ -1847,12 +1899,13 @@
 
                     const result = {
                         baseRate,
-                        flagRate,
+                        flagRate: 0,
                         effectiveRate,
                         basePay,
                         galleyPay,
                         purserPay,
                         intlOverridePay,
+                        languagePay,
                         perDiem,
                         holidayPay,
                         totalGrossPay,
@@ -1863,7 +1916,7 @@
 
                     console.log(`Trip calculation for ${tripData.name}:`, {
                         payYear, creditedHours, dutyHours, tripLength,
-                        perDiemRate, basePay, galleyPay, purserPay, intlOverridePay, perDiem, holidayPay,
+                        perDiemRate, basePay, galleyPay, purserPay, intlOverridePay, languagePay, perDiem, holidayPay,
                         totalGrossPay, netPayEstimate, hourlyValue, perDayValue
                     });
 
@@ -1884,6 +1937,7 @@
                     galleyPay: 0,
                     purserPay: 0,
                     intlOverridePay: 0,
+                    languagePay: 0,
                     perDiem: 0,
                     holidayPay: 0,
                     totalGrossPay: 0,
@@ -2006,11 +2060,13 @@
                 FlightApp.state.editingTripId = null;
                 
                 // Reset toggle labels
-                FlightApp.updateToggleLabel(FlightApp.elements.flagRateToggle, FlightApp.elements.flagRateLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.whiteFlagToggle, FlightApp.elements.whiteFlagLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.purpleFlagToggle, FlightApp.elements.purpleFlagLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.galleyPayToggle, FlightApp.elements.galleyPayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.purserPayToggle, FlightApp.elements.purserPayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlOverrideToggle, FlightApp.elements.intlOverrideLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlPayOverrideToggle, FlightApp.elements.intlPayOverrideLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.languagePayToggle, FlightApp.elements.languagePayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.holidayPayToggle, FlightApp.elements.holidayPayLabel);
                 
                 FlightApp.toggleConditionalFields();
@@ -2019,6 +2075,11 @@
 
             // Toggle conditional fields
             toggleConditionalFields: function() {
+                // Purple Flag Dropdown
+                const showPurpleFlagDropdown = FlightApp.elements.purpleFlagToggle.checked;
+                FlightApp.elements.purpleFlagDropdownGroup.style.display = showPurpleFlagDropdown ? 'block' : 'none';
+                FlightApp.elements.purpleFlagPremiumSelect.disabled = !showPurpleFlagDropdown;
+
                 // Galley Hours
                 const showGalleyHours = FlightApp.elements.galleyPayToggle.checked;
                 FlightApp.elements.galleyHoursGroup.style.display = showGalleyHours ? 'block' : 'none';
@@ -2038,6 +2099,7 @@
                 FlightApp.elements.holidayHoursInput.disabled = !showHolidayHours;
                 
                 console.log('Conditional fields updated:', {
+                    purpleFlagDropdownVisible: showPurpleFlagDropdown,
                     galleyHoursVisible: showGalleyHours,
                     purserFieldsVisible: showPurserFields,
                     holidayHoursVisible: showHolidayHours
@@ -2107,7 +2169,9 @@
                     const safeValues = {
                         name: trip.name || 'Unnamed Trip',
                         payYear: trip.payYear || 'Year 1',
-                        flagRate: trip.flagRate || 'No',
+                        whiteFlag: trip.whiteFlag === true || trip.whiteFlag === 'Yes',
+                        purpleFlag: trip.purpleFlag === true || trip.purpleFlag === 'Yes',
+                        purpleFlagPremium: trip.purpleFlagPremium || '1.5',
                         creditedHoursHours: trip.creditedHoursHours || '0',
                         creditedHoursMinutes: trip.creditedHoursMinutes || '0',
                         tafbHours: trip.tafbHours || '0',
@@ -2116,6 +2180,7 @@
                         galleyPay: trip.galleyPay || 'No',
                         galleyHoursHours: trip.galleyHoursHours || '0',
                         galleyHoursMinutes: trip.galleyHoursMinutes || '0',
+                        languagePay: trip.languagePay || 'No',
                         color: trip.color || '#3a36e0'
                     };
 
@@ -2179,7 +2244,18 @@
                     
                     // Add standard details
                     detailsDiv.appendChild(createDetailRow('Pay Year', safeValues.payYear));
-                    detailsDiv.appendChild(createDetailRow('Flag Rate', safeValues.flagRate));
+                    
+                    // Display flag information
+                    let flagText = 'None';
+                    if (safeValues.whiteFlag && safeValues.purpleFlag) {
+                        flagText = `White + Purple (${parseFloat(safeValues.purpleFlagPremium) * 100}%)`;
+                    } else if (safeValues.whiteFlag) {
+                        flagText = 'White Flag (150%)';
+                    } else if (safeValues.purpleFlag) {
+                        flagText = `Purple Flag (${parseFloat(safeValues.purpleFlagPremium) * 100}%)`;
+                    }
+                    detailsDiv.appendChild(createDetailRow('Flags', flagText));
+                    
                     detailsDiv.appendChild(createDetailRow('Credited Hours', 
                         `${safeValues.creditedHoursHours}h ${safeValues.creditedHoursMinutes}m`));
                     detailsDiv.appendChild(createDetailRow('TAFB time', 
@@ -2233,6 +2309,10 @@
                     
                     if (calculation.intlOverridePay > 0) {
                         summaryDiv.appendChild(createSummaryItem('Intl Override', FlightApp.utils.formatCurrency(calculation.intlOverridePay)));
+                    }
+                    
+                    if (calculation.languagePay > 0) {
+                        summaryDiv.appendChild(createSummaryItem('Language Pay', FlightApp.utils.formatCurrency(calculation.languagePay)));
                     }
                     
                     summaryDiv.appendChild(createSummaryItem('Per Diem', FlightApp.utils.formatCurrency(calculation.perDiem)));
@@ -2548,7 +2628,23 @@
                 // Fill form with trip data
                 FlightApp.elements.tripNameInput.value = trip.name;
                 FlightApp.elements.payYearSelect.value = trip.payYear;
-                FlightApp.elements.flagRateToggle.checked = trip.flagRate === 'Yes';
+                
+                // Handle new white/purple flag structure or legacy flagRate
+                if (trip.whiteFlag !== undefined) {
+                    FlightApp.elements.whiteFlagToggle.checked = trip.whiteFlag === true || trip.whiteFlag === 'Yes';
+                    FlightApp.elements.purpleFlagToggle.checked = trip.purpleFlag === true || trip.purpleFlag === 'Yes';
+                    FlightApp.elements.purpleFlagPremiumSelect.value = trip.purpleFlagPremium || '1.5';
+                } else if (trip.flagRate !== undefined) {
+                    // Legacy support for old flagRate
+                    FlightApp.elements.whiteFlagToggle.checked = trip.flagRate === 'Yes';
+                    FlightApp.elements.purpleFlagToggle.checked = false;
+                    FlightApp.elements.purpleFlagPremiumSelect.value = '1.5';
+                } else {
+                    // Default values
+                    FlightApp.elements.whiteFlagToggle.checked = false;
+                    FlightApp.elements.purpleFlagToggle.checked = false;
+                    FlightApp.elements.purpleFlagPremiumSelect.value = '1.5';
+                }
                 FlightApp.elements.creditedHoursHoursInput.value = trip.creditedHoursHours;
                 FlightApp.elements.creditedHoursMinutesInput.value = trip.creditedHoursMinutes;
                 FlightApp.elements.tafbHoursInput.value = trip.tafbHours;
@@ -2580,17 +2676,20 @@
                 FlightApp.elements.purserNonUSHoursInput.value = trip.purserNonUSHours || 0;
                 FlightApp.elements.intlOverrideToggle.checked = trip.intlOverride === 'Yes';
                 FlightApp.elements.intlPayOverrideToggle.checked = trip.intlPayOverride === 'Yes';
+                FlightApp.elements.languagePayToggle.checked = trip.languagePay === 'Yes';
                 FlightApp.elements.holidayPayToggle.checked = trip.holidayPay === 'Yes';
                 FlightApp.elements.holidayHoursInput.value = trip.holidayHours || 0;
                 FlightApp.elements.retirementPercentageInput.value = trip.retirementPercentage;
                 FlightApp.elements.taxRateInput.value = trip.taxRate;
                 
                 // Update toggle labels
-                FlightApp.updateToggleLabel(FlightApp.elements.flagRateToggle, FlightApp.elements.flagRateLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.whiteFlagToggle, FlightApp.elements.whiteFlagLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.purpleFlagToggle, FlightApp.elements.purpleFlagLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.galleyPayToggle, FlightApp.elements.galleyPayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.purserPayToggle, FlightApp.elements.purserPayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlOverrideToggle, FlightApp.elements.intlOverrideLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.intlPayOverrideToggle, FlightApp.elements.intlPayOverrideLabel);
+                FlightApp.updateToggleLabel(FlightApp.elements.languagePayToggle, FlightApp.elements.languagePayLabel);
                 FlightApp.updateToggleLabel(FlightApp.elements.holidayPayToggle, FlightApp.elements.holidayPayLabel);
                 
                 // Show conditional fields
@@ -2732,7 +2831,9 @@
                 const tripData = {
                     name: FlightApp.elements.tripNameInput.value,
                     payYear: FlightApp.elements.payYearSelect.value,
-                    flagRate: FlightApp.elements.flagRateToggle.checked ? 'Yes' : 'No',
+                    whiteFlag: FlightApp.elements.whiteFlagToggle.checked,
+                    purpleFlag: FlightApp.elements.purpleFlagToggle.checked,
+                    purpleFlagPremium: FlightApp.elements.purpleFlagPremiumSelect.value,
                     creditedHoursHours: FlightApp.elements.creditedHoursHoursInput.value,
                     creditedHoursMinutes: FlightApp.elements.creditedHoursMinutesInput.value,
                     tafbHours: FlightApp.elements.tafbHoursInput.value,
@@ -2747,6 +2848,7 @@
                     purserNonUSHours: FlightApp.elements.purserNonUSHoursInput.value,
                     intlOverride: FlightApp.elements.intlOverrideToggle.checked ? 'Yes' : 'No',
                     intlPayOverride: FlightApp.elements.intlPayOverrideToggle.checked ? 'Yes' : 'No',
+                    languagePay: FlightApp.elements.languagePayToggle.checked ? 'Yes' : 'No',
                     holidayPay: FlightApp.elements.holidayPayToggle.checked ? 'Yes' : 'No',
                     holidayHours: FlightApp.elements.holidayHoursInput.value,
                     retirementPercentage: FlightApp.elements.retirementPercentageInput.value,
@@ -2956,8 +3058,12 @@
                 FlightApp.elements.tripIdInput = document.getElementById('trip-id');
                 FlightApp.elements.tripNameInput = document.getElementById('trip-name');
                 FlightApp.elements.payYearSelect = document.getElementById('pay-year');
-                FlightApp.elements.flagRateToggle = document.getElementById('flag-rate');
-                FlightApp.elements.flagRateLabel = document.getElementById('flag-rate-label');
+                FlightApp.elements.whiteFlagToggle = document.getElementById('white-flag');
+                FlightApp.elements.whiteFlagLabel = document.getElementById('white-flag-label');
+                FlightApp.elements.purpleFlagToggle = document.getElementById('purple-flag');
+                FlightApp.elements.purpleFlagLabel = document.getElementById('purple-flag-label');
+                FlightApp.elements.purpleFlagDropdownGroup = document.getElementById('purple-flag-dropdown-group');
+                FlightApp.elements.purpleFlagPremiumSelect = document.getElementById('purple-flag-premium');
                 FlightApp.elements.creditedHoursHoursInput = document.getElementById('credited-hours-hours');
                 FlightApp.elements.creditedHoursMinutesInput = document.getElementById('credited-hours-minutes');
                 FlightApp.elements.tafbHoursInput = document.getElementById('tafb-hours');
@@ -2988,6 +3094,8 @@
                 FlightApp.elements.holidayHoursGroup = document.getElementById('holiday-hours-group');
                 FlightApp.elements.holidayHoursInput = document.getElementById('holiday-hours');
                 FlightApp.elements.holidayHoursValidation = document.getElementById('holiday-hours-validation');
+                FlightApp.elements.languagePayToggle = document.getElementById('language-pay');
+                FlightApp.elements.languagePayLabel = document.getElementById('language-pay-label');
                 
                 // Buttons
                 FlightApp.elements.saveTripBtn = document.getElementById('save-trip-btn');
@@ -3032,6 +3140,74 @@
 
         // Initialize
         FlightApp.init();
+
+        // Validation for "Hours on Holiday" field
+        const holidayHoursInput = document.getElementById('holiday-hours');
+        const holidayHoursValidation = document.getElementById('holiday-hours-validation');
+
+        function validateHolidayHoursInput() {
+          let value = parseFloat(holidayHoursInput.value);
+          if (isNaN(value)) value = 0;
+          if (value > 24) {
+            holidayHoursInput.value = 24;
+            holidayHoursValidation.textContent = "Maximum is 24 hours";
+            holidayHoursValidation.style.display = "block";
+            holidayHoursInput.setAttribute('aria-invalid', 'true');
+          } else {
+            holidayHoursValidation.style.display = "none";
+            holidayHoursInput.removeAttribute('aria-invalid');
+          }
+        }
+
+        // Validate on input and blur
+        holidayHoursInput.addEventListener('input', validateHolidayHoursInput);
+        holidayHoursInput.addEventListener('blur', validateHolidayHoursInput);
+
+        // Also validate on form submission (inside your validateForm or tripFormSubmitHandler)
+        // Add this call in your validateForm function:
+        // validateHolidayHoursInput();
+
+        // --- White/Purple Flag UI Logic ---
+        const whiteFlagToggle = document.getElementById('white-flag');
+        const whiteFlagLabel = document.getElementById('white-flag-label');
+        const purpleFlagToggle = document.getElementById('purple-flag');
+        const purpleFlagLabel = document.getElementById('purple-flag-label');
+        const purpleFlagDropdownGroup = document.getElementById('purple-flag-dropdown-group');
+        const purpleFlagPremiumSelect = document.getElementById('purple-flag-premium');
+
+        function updateToggleLabel(toggle, labelElement) {
+          labelElement.textContent = toggle.checked ? 'Yes' : 'No';
+          const toggleSlider = toggle.nextElementSibling;
+          if (toggleSlider && toggleSlider.hasAttribute('aria-checked')) {
+            toggleSlider.setAttribute('aria-checked', toggle.checked ? 'true' : 'false');
+          }
+        }
+
+        purpleFlagToggle.addEventListener('change', function() {
+          updateToggleLabel(purpleFlagToggle, purpleFlagLabel);
+          purpleFlagDropdownGroup.style.display = purpleFlagToggle.checked ? 'block' : 'none';
+        });
+        whiteFlagToggle.addEventListener('change', function() {
+          updateToggleLabel(whiteFlagToggle, whiteFlagLabel);
+        });
+        // On page load, set initial state
+        updateToggleLabel(whiteFlagToggle, whiteFlagLabel);
+        updateToggleLabel(purpleFlagToggle, purpleFlagLabel);
+        purpleFlagDropdownGroup.style.display = purpleFlagToggle.checked ? 'block' : 'none';
+
+        // --- Calculation Logic for Premiums ---
+        function getFlagPremiumMultiplier() {
+          let premiumMultiplier = 1;
+          if (whiteFlagToggle.checked) {
+            premiumMultiplier *= 1.5;
+          }
+          if (purpleFlagToggle.checked) {
+            const purplePremium = parseFloat(purpleFlagPremiumSelect.value) || 1;
+            premiumMultiplier *= purplePremium;
+          }
+          return premiumMultiplier;
+        }
+        // Usage: let payWithPremium = basePay * getFlagPremiumMultiplier();
     </script>
 </body>
 </html>
