@@ -116,23 +116,7 @@
         .header > * {
             flex: initial;
         }
-        /* Ko-fi container styles */
-        #kofi-container {
-            max-width: 200px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
 
-        /* Ensure Ko-fi widget stays within container bounds */
-        #kofi-container iframe,
-        #kofi-container > * {
-            max-width: 100% !important;
-            max-height: 44px !important;
-            overflow: hidden !important;
-        }
         @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
             .header {
                 min-height: var(--header-height);
@@ -141,19 +125,14 @@
                 flex-wrap: wrap;
                 gap: 8px;
                 row-gap: 4px;
+                background: #6366f1; /* Solid indigo for mobile - matches gradient start */
+                color: #fff;
             }
             .header > * {
                 flex: 0 1 auto;
             }
-            #kofi-container {
-                order: 2; /* Place after title, before actions */
-                max-width: 300px;
-                width: auto;
-                justify-content: center;
-                margin: 0 auto;
-            }
             .header-buttons {
-                order: 3; /* Place last */
+                order: 2; /* Place after title */
                 width: 100%;
                 justify-content: center;
             }
@@ -170,15 +149,8 @@
             .header > * {
                 flex: 0 1 auto;
             }
-            #kofi-container {
-                order: 2; /* Place after title, before actions */
-                max-width: 300px;
-                width: auto;
-                justify-content: center;
-                margin: 0 auto;
-            }
             .header-buttons {
-                order: 3; /* Place last */
+                order: 2; /* Place after title */
                 width: 100%;
                 justify-content: center;
             }
@@ -195,15 +167,8 @@
             .header > * {
                 flex: 0 1 auto;
             }
-            #kofi-container {
-                order: 2; /* Place after title, before actions */
-                max-width: 300px;
-                width: auto;
-                justify-content: center;
-                margin: 0 auto;
-            }
             .header-buttons {
-                order: 3; /* Place last */
+                order: 2; /* Place after title */
                 width: 100%;
                 justify-content: center;
             }
@@ -1136,7 +1101,6 @@
     <div class="app-container">
         <header class="header" id="header">
             <div class="title">Flight Trip Comparison Tool</div>
-            <div id="kofi-container"></div>
             <div class="header-buttons">
                 <button id="clear-all-btn" class="btn btn-outline" aria-label="Clear all trips">Clear All</button>
                 <button id="feedback-btn" class="btn btn-outline" aria-label="Provide feedback" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc8ATwj4UAgkAzudfzTqZFK3Bc2fe-6bJb31ojZ1Ml8okeraA/viewform?usp=header', '_blank')">Feedback</button>
@@ -3300,17 +3264,6 @@
         }
         window.addEventListener('DOMContentLoaded', adjustMobileHeaderSpacing);
         window.addEventListener('resize', adjustMobileHeaderSpacing);
-    </script>
-    
-    <!-- Ko-fi Widget -->
-    <script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('kofi-container');
-            if (!container) return;
-            kofiwidget2.init('Help me keep this going!✈️', '#003ca3', 'V7V61HOIHV');
-            kofiwidget2.draw(container);
-        });
     </script>
 </body>
 </html>
