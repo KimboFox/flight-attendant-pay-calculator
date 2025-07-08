@@ -120,10 +120,49 @@
         .header > * {
             flex: initial;
         }
-        /* Optional: Ko-fi button inline fix */
+        /* Ko-fi button styles */
         .header-kofi {
             max-width: 200px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .kofi-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            backdrop-filter: blur(4px);
+            white-space: nowrap;
+        }
+
+        .kofi-button:hover,
+        .kofi-button:focus {
+            background-color: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+
+        .kofi-button:active {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(0);
+        }
+
+        .kofi-text {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
             .header {
@@ -138,6 +177,17 @@
             }
             .header > * {
                 flex: 0 1 auto;
+            }
+            .header-kofi {
+                order: 2; /* Place after title, before actions */
+                max-width: none;
+                width: 100%;
+                justify-content: center;
+            }
+            .header-actions {
+                order: 3; /* Place last */
+                width: 100%;
+                justify-content: center;
             }
         }
         @media (orientation: portrait) {
@@ -154,6 +204,17 @@
             .header > * {
                 flex: 0 1 auto;
             }
+            .header-kofi {
+                order: 2; /* Place after title, before actions */
+                max-width: none;
+                width: 100%;
+                justify-content: center;
+            }
+            .header-actions {
+                order: 3; /* Place last */
+                width: 100%;
+                justify-content: center;
+            }
         }
         @media (orientation: landscape) and (max-width: 900px) {
             .header {
@@ -168,6 +229,17 @@
             }
             .header > * {
                 flex: 0 1 auto;
+            }
+            .header-kofi {
+                order: 2; /* Place after title, before actions */
+                max-width: none;
+                width: 100%;
+                justify-content: center;
+            }
+            .header-actions {
+                order: 3; /* Place last */
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -1158,6 +1230,11 @@
             <div class="app-title">
                 <div class="app-logo">FT</div>
                 <h1>Flight Trip Comparison Tool</h1>
+            </div>
+            <div class="header-kofi">
+                <a href="https://ko-fi.com/kimbofox" target="_blank" rel="noopener noreferrer" class="kofi-button" aria-label="Support on Ko-fi">
+                    <span class="kofi-text">☕ Buy me a coffee</span>
+                </a>
             </div>
             <div class="header-actions">
                 <button id="clear-all-btn" class="btn btn-outline" aria-label="Clear all trips">Clear All</button>
