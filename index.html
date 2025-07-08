@@ -928,6 +928,15 @@
 
         /* Media queries */
         @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+            .header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                padding: 0 16px;
+            }
+            
             .side-panel {
                 position: fixed;
                 top: var(--header-height);
@@ -936,15 +945,12 @@
                 width: 90%;
                 max-width: 400px;
                 box-shadow: var(--shadow-lg);
+                z-index: 999;
             }
 
             .trip-card {
                 min-width: 280px;
                 max-width: 100%;
-            }
-            
-            .header {
-                padding: 0 16px;
             }
             
             .trip-title {
@@ -953,6 +959,11 @@
             
             .app-title h1 {
                 font-size: 1.1rem;
+            }
+            
+            /* Add top margin to main content to account for fixed header */
+            .main-content {
+                margin-top: var(--header-height);
             }
         }
         
@@ -1051,6 +1062,7 @@
                 height: calc(100vh - var(--header-height));
                 border-radius: 16px 16px 0 0;
                 box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+                z-index: 999;
             }
             .btn-add-trip {
                 bottom: 12px;
@@ -1062,6 +1074,7 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 8px;
+                z-index: 1000;
             }
         }
         @media (orientation: landscape) and (max-width: 900px) {
@@ -1091,6 +1104,7 @@
                 border-top: none;
                 border-left: 1px solid var(--border);
                 box-shadow: var(--shadow-lg);
+                z-index: 999;
             }
             .btn-add-trip {
                 bottom: 16px;
@@ -1102,6 +1116,7 @@
                 flex-direction: row;
                 align-items: center;
                 gap: 16px;
+                z-index: 1000;
             }
         }
 
@@ -3183,10 +3198,14 @@
                     sidePanel.style.setProperty('height', (viewportHeight - headerHeight) + 'px', 'important');
                     sidePanel.style.setProperty('overflow-y', 'auto', 'important');
                     
-                    // Ensure position is fixed for mobile
+                    // Ensure position is fixed for mobile and proper z-index
                     sidePanel.style.setProperty('position', 'fixed', 'important');
+                    sidePanel.style.setProperty('z-index', '999', 'important');
                     
-                    console.log(`Adjusted side panel: top=${headerHeight}px, height=${viewportHeight - headerHeight}px`);
+                    // Ensure header has proper z-index
+                    header.style.setProperty('z-index', '1000', 'important');
+                    
+                    console.log(`Adjusted side panel: top=${headerHeight}px, height=${viewportHeight - headerHeight}px, z-index=999`);
                 } catch (error) {
                     console.error('Error adjusting Add Trip panel:', error);
                 }
