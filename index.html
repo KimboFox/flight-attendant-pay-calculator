@@ -940,15 +940,21 @@
                 top: 0;
                 left: 0;
                 right: 0;
-                z-index: 1000;
+                z-index: 2147483647;
                 width: 100vw;
                 background: var(--surface);
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 8px;
+                min-height: auto;
+                row-gap: 4px;
             }
-            
+            .header > * {
+                flex: 1 1 auto;
+            }
             .main-content {
                 margin-top: var(--header-height);
             }
-            
             .side-panel {
                 position: fixed;
                 top: var(--header-height);
@@ -961,105 +967,24 @@
                 left: auto;
                 background: var(--surface);
             }
-
-            .trip-card {
-                min-width: 280px;
-                max-width: 100%;
-            }
-            
-            .trip-title {
-                font-size: 1rem;
-            }
-            
-            .app-title h1 {
-                font-size: 1.1rem;
-            }
-            
-            /* Add top margin to main content to account for fixed header */
-            .main-content {
-                margin-top: var(--header-height);
-            }
         }
-        
-        @media (max-width: 480px) {
-            .trip-card {
-                min-width: 260px;
-            }
-            
-            .trip-comparison {
-                padding: 16px;
-                gap: 16px;
-                padding-bottom: 100px; /* Add bottom padding to account for fixed add button */
-            }
-            
-            .header {
-                padding: 0 12px;
-            }
-            
-            .app-title h1 {
-                font-size: 0.9rem;
-            }
-            
-            .app-logo {
-                width: 30px;
-                height: 30px;
-            }
-            
-            .trip-summary-item.highlight .trip-summary-value {
-                font-size: 1rem;
-            }
-            
-            .btn-add-trip {
-                width: 48px;
-                height: 48px;
-                right: 16px;
-                bottom: 16px;
-            }
-        }
-        
-        @media (max-width: 360px) {
-            .trip-card {
-                min-width: 240px;
-            }
-            
-            .trip-comparison {
-                padding: 12px;
-                gap: 12px;
-            }
-            
-            .app-title h1 {
-                font-size: 0.8rem;
-            }
-            
-            .header-actions {
-                gap: 8px;
-            }
-            
-            .btn {
-                padding: 10px 14px;
-                font-size: 0.9rem;
-                min-height: 48px;
-            }
-            
-            .trip-card-body {
-                padding: 12px;
-            }
-            
-            .trip-detail-label,
-            .trip-detail-value {
-                font-size: 0.85rem;
-            }
-        }
-
         @media (orientation: portrait) {
             .header {
-                z-index: 1000;
+                z-index: 2147483647;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 width: 100vw;
                 background: var(--surface);
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 8px;
+                min-height: auto;
+                row-gap: 4px;
+            }
+            .header > * {
+                flex: 1 1 auto;
             }
             .side-panel {
                 z-index: 999;
@@ -1072,28 +997,24 @@
                 height: calc(100vh - var(--header-height));
                 background: var(--surface);
             }
-            .btn-add-trip {
-                bottom: 12px;
-                right: 12px;
-                width: 64px;
-                height: 64px;
-            }
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-                z-index: 1000;
-            }
         }
         @media (orientation: landscape) and (max-width: 900px) {
             .header {
-                z-index: 1000;
+                z-index: 2147483647;
                 position: fixed;
                 top: 0;
                 left: 0;
                 right: 0;
                 width: 100vw;
                 background: var(--surface);
+                flex-wrap: wrap;
+                justify-content: flex-start;
+                gap: 8px;
+                min-height: auto;
+                row-gap: 4px;
+            }
+            .header > * {
+                flex: 1 1 auto;
             }
             .side-panel {
                 z-index: 999;
@@ -1105,18 +1026,6 @@
                 max-width: 480px;
                 height: calc(100vh - var(--header-height));
                 background: var(--surface);
-            }
-            .btn-add-trip {
-                bottom: 16px;
-                right: 24px;
-                width: 56px;
-                height: 56px;
-            }
-            .header {
-                flex-direction: row;
-                align-items: center;
-                gap: 16px;
-                z-index: 1000;
             }
         }
 
