@@ -96,15 +96,22 @@
 
         /* Header */
         .header {
+            position: fixed !important;
+            z-index: 2147483647 !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100vw !important;
+            background: var(--surface) !important;
+            display: flex !important;
+            opacity: 1 !important;
+            visibility: visible !important;
             height: var(--header-height);
-            display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 24px;
-            background-color: var(--surface);
             border-bottom: 1px solid var(--border);
             box-shadow: var(--shadow-sm);
-            z-index: 10;
             flex-wrap: wrap;
         }
         
