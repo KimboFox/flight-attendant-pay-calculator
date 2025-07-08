@@ -158,7 +158,7 @@
                 justify-content: center;
                 margin: 0 auto;
             }
-            .header-actions {
+            .header-buttons {
                 order: 3; /* Place last */
                 width: 100%;
                 justify-content: center;
@@ -185,7 +185,7 @@
                 justify-content: center;
                 margin: 0 auto;
             }
-            .header-actions {
+            .header-buttons {
                 order: 3; /* Place last */
                 width: 100%;
                 justify-content: center;
@@ -212,37 +212,20 @@
                 justify-content: center;
                 margin: 0 auto;
             }
-            .header-actions {
+            .header-buttons {
                 order: 3; /* Place last */
                 width: 100%;
                 justify-content: center;
             }
         }
 
-        .app-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .app-title h1 {
+        .title {
             font-size: 1.25rem;
             font-weight: 600;
+            color: #ffffff;
         }
 
-        .app-logo {
-            width: 36px;
-            height: 36px;
-            background-color: var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-
-        .header-actions {
+        .header-buttons {
             display: flex;
             align-items: center;
             gap: 16px;
@@ -1203,12 +1186,9 @@
     </div>
     <div class="app-container">
         <header class="header" id="header">
-            <div class="app-title">
-                <div class="app-logo">FT</div>
-                <h1>Flight Trip Comparison Tool</h1>
-            </div>
+            <div class="title">Flight Trip Comparison Tool</div>
             <div id="kofi-container"></div>
-            <div class="header-actions">
+            <div class="header-buttons">
                 <button id="clear-all-btn" class="btn btn-outline" aria-label="Clear all trips">Clear All</button>
                 <button id="feedback-btn" class="btn btn-outline" aria-label="Provide feedback" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc8ATwj4UAgkAzudfzTqZFK3Bc2fe-6bJb31ojZ1Ml8okeraA/viewform?usp=header', '_blank')">Feedback</button>
                 <button id="export-btn" class="btn btn-outline" aria-label="Export trips">Export</button>
@@ -3374,11 +3354,13 @@
     </script>
     
     <!-- Ko-fi Widget -->
-    <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+    <script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('kofi-container');
+            if (!container) return;
             kofiwidget2.init('Help me keep this going!✈️', '#003ca3', 'V7V61HOIHV');
-            kofiwidget2.draw(document.getElementById('kofi-container'));
+            kofiwidget2.draw(container);
         });
     </script>
 </body>
