@@ -946,14 +946,13 @@
                 flex-wrap: wrap;
                 justify-content: flex-start;
                 gap: 8px;
-                min-height: auto;
+                min-height: var(--header-height);
+                height: var(--header-height);
                 row-gap: 4px;
+                box-sizing: border-box;
             }
             .header > * {
                 flex: 1 1 auto;
-            }
-            .main-content {
-                margin-top: var(--header-height);
             }
             .side-panel {
                 position: fixed;
@@ -966,6 +965,10 @@
                 z-index: 999;
                 left: auto;
                 background: var(--surface);
+                box-sizing: border-box;
+            }
+            .main-content {
+                margin-top: var(--header-height);
             }
         }
         @media (orientation: portrait) {
@@ -980,8 +983,10 @@
                 flex-wrap: wrap;
                 justify-content: flex-start;
                 gap: 8px;
-                min-height: auto;
+                min-height: var(--header-height);
+                height: var(--header-height);
                 row-gap: 4px;
+                box-sizing: border-box;
             }
             .header > * {
                 flex: 1 1 auto;
@@ -996,6 +1001,7 @@
                 max-width: 100vw;
                 height: calc(100vh - var(--header-height));
                 background: var(--surface);
+                box-sizing: border-box;
             }
         }
         @media (orientation: landscape) and (max-width: 900px) {
@@ -1010,8 +1016,10 @@
                 flex-wrap: wrap;
                 justify-content: flex-start;
                 gap: 8px;
-                min-height: auto;
+                min-height: var(--header-height);
+                height: var(--header-height);
                 row-gap: 4px;
+                box-sizing: border-box;
             }
             .header > * {
                 flex: 1 1 auto;
@@ -1026,6 +1034,7 @@
                 max-width: 480px;
                 height: calc(100vh - var(--header-height));
                 background: var(--surface);
+                box-sizing: border-box;
             }
         }
 
@@ -3201,6 +3210,18 @@
         }
         window.addEventListener('DOMContentLoaded', adjustDesktopMainContentMargin);
         window.addEventListener('resize', adjustDesktopMainContentMargin);
+
+        // Log header height and CSS variable at runtime (mobile only)
+        function logHeaderHeightAndVar() {
+            if (window.innerWidth > 1024) return;
+            const header = document.querySelector('.header');
+            if (!header) return;
+            const computed = getComputedStyle(header);
+            const cssVar = computed.getPropertyValue('--header-height');
+            console.log('[Header Height Debug] offsetHeight:', header.offsetHeight, 'CSS var --header-height:', cssVar);
+        }
+        window.addEventListener('DOMContentLoaded', logHeaderHeightAndVar);
+        window.addEventListener('resize', logHeaderHeightAndVar);
     </script>
 </body>
 </html>
