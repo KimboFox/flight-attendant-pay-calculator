@@ -3058,6 +3058,7 @@
                 FlightApp.toggleConditionalFields();
                 FlightApp.numericInputValidations();
                 FlightApp.keyboardShortcuts();
+                FlightApp.adjustAddTripPanel(); // Adjust panel on page load
             },
 
             // Cache DOM elements
@@ -3152,7 +3153,47 @@
                     FlightApp.elements.clearAllBtn.addEventListener('click', FlightApp.clearAllBtnHandler);
                 }
                 
+                // Resize event listener for panel adjustment
+                window.addEventListener('resize', FlightApp.adjustAddTripPanel);
+                
                 console.log('Event listeners initialized');
+            },
+
+            // Dynamically adjust Add New Trip panel height & position for mobile
+            adjustAddTripPanel: function() {
+                try {
+                    // Only apply adjustments on mobile/small screens or touch devices
+                    const isMobile = window.innerWidth <= 1024 || 
+                                   (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches);
+                    
+                    if (!isMobile) {
+                        return; // Don't adjust on desktop
+                    }
+                    
+                    // Select the header and side panel
+                    const header = document.querySelector('.header');
+                    const sidePanel = document.querySelector('.side-panel');
+                    
+                    if (!header || !sidePanel) {
+                        console.warn('Header or side panel not found for adjustment');
+                        return;
+                    }
+                    
+                    // Measure header height and viewport height
+                    const headerHeight = header.offsetHeight;
+                    const viewportHeight = window.innerHeight;
+                    
+                    // Set panel position and height
+                    sidePanel.style.top = headerHeight + 'px';
+                    sidePanel.style.height = (viewportHeight - headerHeight) + 'px';
+                    
+                    // Ensure panel remains scrollable
+                    sidePanel.style.overflowY = 'auto';
+                    
+                    console.log(`Adjusted side panel: top=${headerHeight}px, height=${viewportHeight - headerHeight}px`);
+                } catch (error) {
+                    console.error('Error adjusting Add Trip panel:', error);
+                }
             }
         };
 
