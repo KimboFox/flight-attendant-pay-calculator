@@ -1,0 +1,68 @@
+/* ========================================================================
+   toast.css — Styles for toast notifications and animations
+   ======================================================================== */
+
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.toast {
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background-color: var(--surface);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    font-size: 0.9rem;
+    max-width: 320px;
+    width: calc(100% - 24px);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideIn 0.3s ease forwards;
+    border-left: 4px solid var(--info);
+    pointer-events: auto;
+}
+
+.toast-success {
+    border-left-color: var(--success);
+}
+
+.toast-error {
+    border-left-color: var(--danger);
+}
+
+.toast-warning {
+    border-left-color: var(--warning);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Mobile responsive toast styles */
+@media (max-width: 480px) {
+    .toast {
+        max-width: 280px;
+        padding: 10px 14px;
+        font-size: 0.8rem;
+    }
+    
+    .toast-container {
+        bottom: 16px;
+        left: 16px;
+    }
+} 

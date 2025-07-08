@@ -1,0 +1,70 @@
+/* ========================================================================
+   variables.css — CSS custom properties (variables) for colors, spacing, and design tokens
+   These variables define the design system and can be easily modified to change the entire theme.
+   ======================================================================== */
+:root {
+    /* Primary Colors */
+    --primary: #3a36e0;
+    --primary-light: #6d6aff;
+    --primary-dark: #2d2ca9;
+
+    /* Secondary Colors */
+    --secondary: #ff9d00;
+    --secondary-light: #ffb240;
+    --secondary-dark: #e58900;
+
+    /* Status Colors */
+    --success: #00c48c;
+    --danger: #ff647c;
+    --warning: #ffd166;
+    --info: #0084ff;
+
+    /* Greys & Surfaces */
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --text: #1a202c;
+    --text-secondary: #4a5568;
+    --border: #e2e8f0;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+    --shadow: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+
+    /* Border Radius */
+    --radius: 8px;
+    --radius-lg: 12px;
+
+    /* Transitions */
+    --transition: all 0.2s ease;
+
+    /* Layout */
+    --header-height: 64px;
+    --side-panel-width: 320px;
+}
+
+/* ========================================================================
+   DARK MODE OVERRIDES
+   ======================================================================== */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --background: #121620;
+        --surface: #1a202c;
+        --text: #ffffff;
+        --text-secondary: #cbd5e0;
+        --border: #4a5568;
+
+        --primary: #818cf8;
+        --primary-light: #a5b4fc;
+        --primary-dark: #6366f1;
+
+        --secondary: #ffb74d;
+        --secondary-light: #ffcc80;
+        --secondary-dark: #ff9800;
+
+        --success: #4ade80;
+        --danger: #f87171;
+        --warning: #fcd34d;
+        --info: #60a5fa;
+    }
+}

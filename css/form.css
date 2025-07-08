@@ -1,0 +1,199 @@
+/* ========================================================================
+   form.css — Styles for form elements, inputs, toggles, and validation
+   ======================================================================== */
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.conditional-form-group {
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+    margin-left: 4px;
+    margin-bottom: 16px;
+    display: none;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background-color: var(--surface);
+    color: var(--text);
+    font-size: 1rem;
+    transition: var(--transition);
+    min-height: 44px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.form-control:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.validation-message {
+    font-size: 0.8rem;
+    color: var(--danger);
+    margin-top: 4px;
+    display: none;
+    padding: 4px 8px;
+    border-left: 2px solid var(--danger);
+    background-color: rgba(255, 100, 124, 0.1);
+    font-weight: 500;
+}
+
+input[aria-invalid="true"], 
+select[aria-invalid="true"] {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 1px var(--danger);
+}
+
+/* Toggle Switch */
+.toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--text-secondary);
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(58, 54, 224, 0.4);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary);
+}
+
+input:focus + .toggle-slider {
+    box-shadow: 0 0 1px var(--primary);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(30px);
+}
+
+.toggle-label {
+    margin-left: 8px;
+    font-size: 0.9rem;
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Dark mode overrides for forms */
+@media (prefers-color-scheme: dark) {
+    label {
+        color: var(--text);
+    }
+    
+    .form-control {
+        background-color: #1a202c;
+        border-color: #4a5568;
+        color: #ffffff;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-light);
+        box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
+    }
+    
+    .validation-message {
+        background-color: rgba(248, 113, 113, 0.2);
+        color: #f87171;
+        border-left-color: #f87171;
+    }
+    
+    .conditional-form-group {
+        border-left-color: var(--primary);
+    }
+    
+    .toggle-label {
+        color: var(--text);
+        font-weight: 600;
+    }
+}
+
+/* Mobile responsive form styles */
+@media (max-width: 480px) {
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    label {
+        margin-bottom: 4px;
+        font-size: 0.85rem;
+    }
+    
+    .form-control {
+        padding: 14px 16px;
+        min-height: 48px;
+        font-size: 16px;
+    }
+    
+    .toggle-switch {
+        width: 70px;
+        height: 34px;
+    }
+    
+    .toggle-slider:before {
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(36px);
+    }
+} 

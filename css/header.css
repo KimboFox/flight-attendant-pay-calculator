@@ -1,0 +1,95 @@
+/* ========================================================================
+   header.css — Styles for the site header and header buttons
+   ======================================================================== */
+
+.header {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    min-height: var(--header-height);
+    height: auto;
+    position: fixed;
+    z-index: 2147483647;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    background: linear-gradient(to right, #2a62f0, #1b46c2);
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border);
+}
+
+.header > * {
+    flex: initial;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.header-buttons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+@media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+    .header {
+        min-height: var(--header-height);
+        height: auto;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        gap: 8px;
+        row-gap: 4px;
+        background: #6366f1;
+        color: #fff;
+    }
+    .header > * {
+        flex: 0 1 auto;
+    }
+    .header-buttons {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+}
+@media (orientation: portrait) {
+    .header {
+        min-height: var(--header-height);
+        height: auto;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        gap: 8px;
+        row-gap: 4px;
+    }
+    .header > * {
+        flex: 0 1 auto;
+    }
+    .header-buttons {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+}
+@media (orientation: landscape) and (max-width: 900px) {
+    .header {
+        min-height: var(--header-height);
+        height: auto;
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        gap: 8px;
+        row-gap: 4px;
+    }
+    .header > * {
+        flex: 0 1 auto;
+    }
+    .header-buttons {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+} 
