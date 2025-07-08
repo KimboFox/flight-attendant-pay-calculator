@@ -936,23 +936,14 @@
         /* Media queries */
         @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
             .header {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 2147483647;
-                width: 100vw;
-                background: var(--surface);
-                flex-wrap: wrap;
-                justify-content: flex-start;
-                gap: 8px;
                 min-height: var(--header-height);
-                height: var(--header-height);
-                row-gap: 4px;
+                height: auto;
                 box-sizing: border-box;
+                flex-wrap: wrap;
+                gap: 8px;
             }
             .header > * {
-                flex: 1 1 auto;
+                flex: 0 1 auto;
             }
             .side-panel {
                 position: fixed;
@@ -973,23 +964,14 @@
         }
         @media (orientation: portrait) {
             .header {
-                z-index: 2147483647;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                width: 100vw;
-                background: var(--surface);
-                flex-wrap: wrap;
-                justify-content: flex-start;
-                gap: 8px;
                 min-height: var(--header-height);
-                height: var(--header-height);
-                row-gap: 4px;
+                height: auto;
                 box-sizing: border-box;
+                flex-wrap: wrap;
+                gap: 8px;
             }
             .header > * {
-                flex: 1 1 auto;
+                flex: 0 1 auto;
             }
             .side-panel {
                 z-index: 999;
@@ -1006,23 +988,14 @@
         }
         @media (orientation: landscape) and (max-width: 900px) {
             .header {
-                z-index: 2147483647;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                width: 100vw;
-                background: var(--surface);
-                flex-wrap: wrap;
-                justify-content: flex-start;
-                gap: 8px;
                 min-height: var(--header-height);
-                height: var(--header-height);
-                row-gap: 4px;
+                height: auto;
                 box-sizing: border-box;
+                flex-wrap: wrap;
+                gap: 8px;
             }
             .header > * {
-                flex: 1 1 auto;
+                flex: 0 1 auto;
             }
             .side-panel {
                 z-index: 999;
@@ -3222,6 +3195,42 @@
         }
         window.addEventListener('DOMContentLoaded', logHeaderHeightAndVar);
         window.addEventListener('resize', logHeaderHeightAndVar);
+
+        function adjustMobileHeaderSpacing() {
+          const header = document.querySelector('.header');
+          const sidePanel = document.querySelector('.side-panel');
+          const mainContent = document.querySelector('.main-content');
+          if (!header) return;
+
+          if (
+            window.innerWidth <= 1024 ||
+            (window.matchMedia && window.matchMedia('(hover: none) and (pointer: coarse)').matches)
+          ) {
+            const headerHeight = header.offsetHeight;
+            if (sidePanel) {
+              sidePanel.style.top = headerHeight + 'px';
+              sidePanel.style.height = `calc(100vh - ${headerHeight}px)`;
+            }
+            if (mainContent) {
+              mainContent.style.marginTop = headerHeight + 'px';
+            }
+
+            // Debug log
+            const computed = getComputedStyle(header);
+            const cssVar = computed.getPropertyValue('--header-height');
+            console.log('[Header Height Debug] offsetHeight:', headerHeight, 'CSS var --header-height:', cssVar);
+          } else {
+            if (sidePanel) {
+              sidePanel.style.top = '';
+              sidePanel.style.height = '';
+            }
+            if (mainContent) {
+              mainContent.style.marginTop = '';
+            }
+          }
+        }
+        window.addEventListener('DOMContentLoaded', adjustMobileHeaderSpacing);
+        window.addEventListener('resize', adjustMobileHeaderSpacing);
     </script>
 </body>
 </html>
