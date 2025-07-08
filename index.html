@@ -3186,6 +3186,21 @@
           return premiumMultiplier;
         }
         // Usage: let payWithPremium = basePay * getFlagPremiumMultiplier();
+
+        // Dynamically adjust main-content margin-top for desktop fixed header
+        function adjustDesktopMainContentMargin() {
+            const header = document.querySelector('.header');
+            const mainContent = document.querySelector('.main-content');
+            if (!header || !mainContent) return;
+            if (window.innerWidth >= 1024) {
+                const headerHeight = header.offsetHeight;
+                mainContent.style.marginTop = headerHeight + 'px';
+            } else {
+                mainContent.style.marginTop = '';
+            }
+        }
+        window.addEventListener('DOMContentLoaded', adjustDesktopMainContentMargin);
+        window.addEventListener('resize', adjustDesktopMainContentMargin);
     </script>
 </body>
 </html>
