@@ -21,7 +21,86 @@ document.addEventListener('DOMContentLoaded', function() {
     makeElementsFocusable();
 });
 
-
+// Centralized DOM element getter
+function getDomElements() {
+    return {
+        // Main container elements
+        tripComparison: document.getElementById('trip-comparison'),
+        noTripsMessage: document.getElementById('no-trips-message'),
+        sidePanel: document.getElementById('side-panel'),
+        addTripBtn: document.getElementById('add-trip-btn'),
+        toastContainer: document.getElementById('toast-container'),
+        
+        // Panel elements
+        panelTitle: document.getElementById('panel-title'),
+        panelClose: document.getElementById('panel-close'),
+        
+        // Form elements
+        tripForm: document.getElementById('trip-form'),
+        tripIdInput: document.getElementById('trip-id'),
+        tripNameInput: document.getElementById('trip-name'),
+        payYearSelect: document.getElementById('pay-year'),
+        
+        // Flag toggles
+        whiteFlagToggle: document.getElementById('white-flag'),
+        whiteFlagLabel: document.getElementById('white-flag-label'),
+        purpleFlagToggle: document.getElementById('purple-flag'),
+        purpleFlagLabel: document.getElementById('purple-flag-label'),
+        purpleFlagDropdownGroup: document.getElementById('purple-flag-dropdown-group'),
+        purpleFlagPremiumSelect: document.getElementById('purple-flag-premium'),
+        
+        // Hours inputs
+        creditedHoursHoursInput: document.getElementById('credited-hours-hours'),
+        creditedHoursMinutesInput: document.getElementById('credited-hours-minutes'),
+        tafbHoursInput: document.getElementById('tafb-hours'),
+        tafbMinutesInput: document.getElementById('tafb-minutes'),
+        tripLengthSelect: document.getElementById('trip-length'),
+        
+        // Galley pay elements
+        galleyPayToggle: document.getElementById('galley-pay'),
+        galleyPayLabel: document.getElementById('galley-pay-label'),
+        galleyHoursGroup: document.getElementById('galley-hours-group'),
+        galleyHoursHoursInput: document.getElementById('galley-hours-hours'),
+        galleyHoursMinutesInput: document.getElementById('galley-hours-minutes'),
+        galleyHoursValidation: document.getElementById('galley-hours-validation'),
+        
+        // Purser pay elements
+        purserPayToggle: document.getElementById('purser-pay'),
+        purserPayLabel: document.getElementById('purser-pay-label'),
+        purserFieldsGroup: document.getElementById('purser-fields-group'),
+        aircraftTypeSelect: document.getElementById('aircraft-type'),
+        purserUSHoursInput: document.getElementById('purser-us-hours'),
+        purserUSHoursValidation: document.getElementById('purser-us-hours-validation'),
+        purserNonUSHoursInput: document.getElementById('purser-non-us-hours'),
+        purserNonUSHoursValidation: document.getElementById('purser-non-us-hours-validation'),
+        
+        // International and language pay
+        intlOverrideToggle: document.getElementById('intl-override'),
+        intlOverrideLabel: document.getElementById('intl-override-label'),
+        intlPayOverrideToggle: document.getElementById('intl-pay-override'),
+        intlPayOverrideLabel: document.getElementById('intl-pay-override-label'),
+        languagePayToggle: document.getElementById('language-pay'),
+        languagePayLabel: document.getElementById('language-pay-label'),
+        
+        // Holiday pay elements
+        holidayPayToggle: document.getElementById('holiday-pay'),
+        holidayPayLabel: document.getElementById('holiday-pay-label'),
+        holidayHoursGroup: document.getElementById('holiday-hours-group'),
+        holidayHoursInput: document.getElementById('holiday-hours'),
+        holidayHoursValidation: document.getElementById('holiday-hours-validation'),
+        
+        // Financial inputs
+        retirementPercentageInput: document.getElementById('retirement-percentage'),
+        taxRateInput: document.getElementById('tax-rate'),
+        
+        // Buttons
+        saveTripBtn: document.getElementById('save-trip-btn'),
+        cancelBtn: document.getElementById('cancel-btn'),
+        firstTripBtn: document.getElementById('first-trip-btn'),
+        exportBtn: document.getElementById('export-btn'),
+        clearAllBtn: document.getElementById('clear-all-btn')
+    };
+}
 
 const constants = {
     DOMESTIC_PER_DIEM_RATE: 2.40,      // Domestic per diem rate: $2.40/hr (tax-free)
@@ -490,18 +569,12 @@ const uiState = {
 
 function toggleSidePanel(show = true) {
     // Get DOM elements when function is called
-    const elements = {
-        sidePanel: document.getElementById('side-panel'),
-        addTripBtn: document.getElementById('add-trip-btn'),
-        tripNameInput: document.getElementById('trip-name')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist
-    for (const [key, element] of Object.entries(elements)) {
-        if (!element) {
-            console.error(`Element not found: ${key}`);
-            return;
-        }
+    // Check if required elements exist
+    if (!elements.sidePanel || !elements.addTripBtn || !elements.tripNameInput) {
+        console.error('Required elements not found for toggleSidePanel');
+        return;
     }
 
     if (show) {
@@ -577,37 +650,12 @@ function removeFocusTrap() {
 
 function resetForm() {
     // Get DOM elements when function is called
-    const elements = {
-        tripForm: document.getElementById('trip-form'),
-        tripIdInput: document.getElementById('trip-id'),
-        galleyHoursValidation: document.getElementById('galley-hours-validation'),
-        purserUSHoursValidation: document.getElementById('purser-us-hours-validation'),
-        purserNonUSHoursValidation: document.getElementById('purser-non-us-hours-validation'),
-        holidayHoursValidation: document.getElementById('holiday-hours-validation'),
-        whiteFlagToggle: document.getElementById('white-flag'),
-        whiteFlagLabel: document.getElementById('white-flag-label'),
-        purpleFlagToggle: document.getElementById('purple-flag'),
-        purpleFlagLabel: document.getElementById('purple-flag-label'),
-        galleyPayToggle: document.getElementById('galley-pay'),
-        galleyPayLabel: document.getElementById('galley-pay-label'),
-        purserPayToggle: document.getElementById('purser-pay'),
-        purserPayLabel: document.getElementById('purser-pay-label'),
-        intlOverrideToggle: document.getElementById('intl-override'),
-        intlOverrideLabel: document.getElementById('intl-override-label'),
-        intlPayOverrideToggle: document.getElementById('intl-pay-override'),
-        intlPayOverrideLabel: document.getElementById('intl-pay-override-label'),
-        languagePayToggle: document.getElementById('language-pay'),
-        languagePayLabel: document.getElementById('language-pay-label'),
-        holidayPayToggle: document.getElementById('holiday-pay'),
-        holidayPayLabel: document.getElementById('holiday-pay-label')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist
-    for (const [key, element] of Object.entries(elements)) {
-        if (!element) {
-            console.error(`Element not found: ${key}`);
-            return;
-        }
+    // Check if required elements exist
+    if (!elements.tripForm || !elements.tripIdInput) {
+        console.error('Required elements not found for resetForm');
+        return;
     }
 
     elements.tripForm.reset();
@@ -651,30 +699,12 @@ function resetForm() {
 
 function toggleConditionalFields() {
     // Get DOM elements when function is called
-    const elements = {
-        purpleFlagToggle: document.getElementById('purple-flag'),
-        purpleFlagDropdownGroup: document.getElementById('purple-flag-dropdown-group'),
-        purpleFlagPremiumSelect: document.getElementById('purple-flag-premium'),
-        galleyPayToggle: document.getElementById('galley-pay'),
-        galleyHoursGroup: document.getElementById('galley-hours-group'),
-        galleyHoursHoursInput: document.getElementById('galley-hours-hours'),
-        galleyHoursMinutesInput: document.getElementById('galley-hours-minutes'),
-        purserPayToggle: document.getElementById('purser-pay'),
-        purserFieldsGroup: document.getElementById('purser-fields-group'),
-        aircraftTypeSelect: document.getElementById('aircraft-type'),
-        purserUSHoursInput: document.getElementById('purser-us-hours'),
-        purserNonUSHoursInput: document.getElementById('purser-non-us-hours'),
-        holidayPayToggle: document.getElementById('holiday-pay'),
-        holidayHoursGroup: document.getElementById('holiday-hours-group'),
-        holidayHoursInput: document.getElementById('holiday-hours')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist
-    for (const [key, element] of Object.entries(elements)) {
-        if (!element) {
-            console.error(`Element not found: ${key}`);
-            return;
-        }
+    // Check if required elements exist
+    if (!elements.purpleFlagToggle || !elements.galleyPayToggle || !elements.purserPayToggle || !elements.holidayPayToggle) {
+        console.error('Required elements not found for toggleConditionalFields');
+        return;
     }
 
     // Purple Flag Dropdown
@@ -710,9 +740,9 @@ function toggleConditionalFields() {
 
 function showToast(message, type = 'info') {
     // Get DOM element when function is called
-    const toastContainer = document.getElementById('toast-container');
+    const elements = getDomElements();
     
-    if (!toastContainer) {
+    if (!elements.toastContainer) {
         console.error('Toast container not found');
         return;
     }
@@ -740,7 +770,7 @@ function showToast(message, type = 'info') {
         toast.textContent = message;
     }
     
-    toastContainer.appendChild(toast);
+    elements.toastContainer.appendChild(toast);
     console.log(`Toast notification: ${message} (${type})`);
     
     setTimeout(() => {
@@ -748,7 +778,7 @@ function showToast(message, type = 'info') {
         toast.style.transform = 'translateX(-100%)';
         setTimeout(() => {
             if (toast.parentNode) {
-                toastContainer.removeChild(toast);
+                elements.toastContainer.removeChild(toast);
             }
         }, 300);
     }, 3000);
@@ -992,10 +1022,7 @@ function renderTripCard(trip) {
 function renderTrips() {
     try {
         // Get DOM elements when function is called
-        const elements = {
-            tripComparison: document.getElementById('trip-comparison'),
-            noTripsMessage: document.getElementById('no-trips-message')
-        };
+        const elements = getDomElements();
 
         // Check if required elements exist
         if (!elements.tripComparison) {
@@ -1259,49 +1286,12 @@ function deleteTrip(tripId) {
 
 function editTrip(tripId) {
     // Get DOM elements when function is called
-    const elements = {
-        panelTitle: document.getElementById('panel-title'),
-        tripIdInput: document.getElementById('trip-id'),
-        tripNameInput: document.getElementById('trip-name'),
-        payYearSelect: document.getElementById('pay-year'),
-        whiteFlagToggle: document.getElementById('white-flag'),
-        whiteFlagLabel: document.getElementById('white-flag-label'),
-        purpleFlagToggle: document.getElementById('purple-flag'),
-        purpleFlagLabel: document.getElementById('purple-flag-label'),
-        purpleFlagPremiumSelect: document.getElementById('purple-flag-premium'),
-        creditedHoursHoursInput: document.getElementById('credited-hours-hours'),
-        creditedHoursMinutesInput: document.getElementById('credited-hours-minutes'),
-        tafbHoursInput: document.getElementById('tafb-hours'),
-        tafbMinutesInput: document.getElementById('tafb-minutes'),
-        tripLengthSelect: document.getElementById('trip-length'),
-        galleyPayToggle: document.getElementById('galley-pay'),
-        galleyPayLabel: document.getElementById('galley-pay-label'),
-        galleyHoursHoursInput: document.getElementById('galley-hours-hours'),
-        galleyHoursMinutesInput: document.getElementById('galley-hours-minutes'),
-        purserPayToggle: document.getElementById('purser-pay'),
-        purserPayLabel: document.getElementById('purser-pay-label'),
-        aircraftTypeSelect: document.getElementById('aircraft-type'),
-        purserUSHoursInput: document.getElementById('purser-us-hours'),
-        purserNonUSHoursInput: document.getElementById('purser-non-us-hours'),
-        intlOverrideToggle: document.getElementById('intl-override'),
-        intlOverrideLabel: document.getElementById('intl-override-label'),
-        intlPayOverrideToggle: document.getElementById('intl-pay-override'),
-        intlPayOverrideLabel: document.getElementById('intl-pay-override-label'),
-        languagePayToggle: document.getElementById('language-pay'),
-        languagePayLabel: document.getElementById('language-pay-label'),
-        holidayPayToggle: document.getElementById('holiday-pay'),
-        holidayPayLabel: document.getElementById('holiday-pay-label'),
-        holidayHoursInput: document.getElementById('holiday-hours'),
-        retirementPercentageInput: document.getElementById('retirement-percentage'),
-        taxRateInput: document.getElementById('tax-rate')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist
-    for (const [key, element] of Object.entries(elements)) {
-        if (!element) {
-            console.error(`Element not found: ${key}`);
-            return;
-        }
+    // Check if required elements exist
+    if (!elements.panelTitle || !elements.tripIdInput || !elements.tripNameInput) {
+        console.error('Required elements not found for editTrip');
+        return;
     }
 
     const trip = state.trips.find(t => t.id === tripId);
@@ -1428,26 +1418,12 @@ function clearAllTrips() {
 function validateForm() {
     try {
         // Get DOM elements when function is called
-        const elements = {
-            tripNameInput: document.getElementById('trip-name'),
-            payYearSelect: document.getElementById('pay-year'),
-            creditedHoursHoursInput: document.getElementById('credited-hours-hours'),
-            creditedHoursMinutesInput: document.getElementById('credited-hours-minutes'),
-            tafbHoursInput: document.getElementById('tafb-hours'),
-            tafbMinutesInput: document.getElementById('tafb-minutes'),
-            tripLengthSelect: document.getElementById('trip-length'),
-            galleyHoursValidation: document.getElementById('galley-hours-validation'),
-            galleyHoursHoursInput: document.getElementById('galley-hours-hours'),
-            purserUSHoursValidation: document.getElementById('purser-us-hours-validation'),
-            purserUSHoursInput: document.getElementById('purser-us-hours')
-        };
+        const elements = getDomElements();
 
-        // Check if all elements exist
-        for (const [key, element] of Object.entries(elements)) {
-            if (!element) {
-                console.error(`Element not found: ${key}`);
-                return false;
-            }
+        // Check if required elements exist
+        if (!elements.tripNameInput || !elements.payYearSelect) {
+            console.error('Required elements not found for validateForm');
+            return false;
         }
 
         const requiredFields = [
@@ -1535,39 +1511,12 @@ function tripFormSubmitHandler(e) {
     }
 
     // Get DOM elements when function is called
-    const elements = {
-        tripNameInput: document.getElementById('trip-name'),
-        payYearSelect: document.getElementById('pay-year'),
-        whiteFlagToggle: document.getElementById('white-flag'),
-        purpleFlagToggle: document.getElementById('purple-flag'),
-        purpleFlagPremiumSelect: document.getElementById('purple-flag-premium'),
-        creditedHoursHoursInput: document.getElementById('credited-hours-hours'),
-        creditedHoursMinutesInput: document.getElementById('credited-hours-minutes'),
-        tafbHoursInput: document.getElementById('tafb-hours'),
-        tafbMinutesInput: document.getElementById('tafb-minutes'),
-        tripLengthSelect: document.getElementById('trip-length'),
-        galleyPayToggle: document.getElementById('galley-pay'),
-        galleyHoursHoursInput: document.getElementById('galley-hours-hours'),
-        galleyHoursMinutesInput: document.getElementById('galley-hours-minutes'),
-        purserPayToggle: document.getElementById('purser-pay'),
-        aircraftTypeSelect: document.getElementById('aircraft-type'),
-        purserUSHoursInput: document.getElementById('purser-us-hours'),
-        purserNonUSHoursInput: document.getElementById('purser-non-us-hours'),
-        intlOverrideToggle: document.getElementById('intl-override'),
-        intlPayOverrideToggle: document.getElementById('intl-pay-override'),
-        languagePayToggle: document.getElementById('language-pay'),
-        holidayPayToggle: document.getElementById('holiday-pay'),
-        holidayHoursInput: document.getElementById('holiday-hours'),
-        retirementPercentageInput: document.getElementById('retirement-percentage'),
-        taxRateInput: document.getElementById('tax-rate')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist
-    for (const [key, element] of Object.entries(elements)) {
-        if (!element) {
-            console.error(`Element not found: ${key}`);
-            return;
-        }
+    // Check if required elements exist
+    if (!elements.tripNameInput || !elements.payYearSelect) {
+        console.error('Required elements not found for tripFormSubmitHandler');
+        return;
     }
 
     // 2) Build your tripData object
@@ -1612,18 +1561,18 @@ function tripFormSubmitHandler(e) {
 
 function addTripBtnHandler() {
     resetForm();
-    const panelTitle = document.getElementById('panel-title');
-    if (panelTitle) {
-        panelTitle.textContent = 'Add New Trip';
+    const elements = getDomElements();
+    if (elements.panelTitle) {
+        elements.panelTitle.textContent = 'Add New Trip';
     }
     toggleSidePanel(true);
 }
 
 function firstTripBtnHandler() {
     resetForm();
-    const panelTitle = document.getElementById('panel-title');
-    if (panelTitle) {
-        panelTitle.textContent = 'Add New Trip';
+    const elements = getDomElements();
+    if (elements.panelTitle) {
+        elements.panelTitle.textContent = 'Add New Trip';
     }
     toggleSidePanel(true);    
 }
@@ -1646,26 +1595,12 @@ function exportBtnHandler() {
 
 function numericInputValidations() {
     // Get DOM elements when function is called
-    const elements = {
-        creditedHoursHoursInput: document.getElementById('credited-hours-hours'),
-        creditedHoursMinutesInput: document.getElementById('credited-hours-minutes'),
-        tafbHoursInput: document.getElementById('tafb-hours'),
-        tafbMinutesInput: document.getElementById('tafb-minutes'),
-        galleyHoursHoursInput: document.getElementById('galley-hours-hours'),
-        galleyHoursMinutesInput: document.getElementById('galley-hours-minutes'),
-        purserUSHoursInput: document.getElementById('purser-us-hours'),
-        purserNonUSHoursInput: document.getElementById('purser-non-us-hours'),
-        holidayHoursInput: document.getElementById('holiday-hours'),
-        retirementPercentageInput: document.getElementById('retirement-percentage'),
-        taxRateInput: document.getElementById('tax-rate')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist
-    for (const [key, element] of Object.entries(elements)) {
-        if (!element) {
-            console.error(`Element not found: ${key}`);
-            return;
-        }
+    // Check if required elements exist
+    if (!elements.creditedHoursHoursInput || !elements.tafbHoursInput) {
+        console.error('Required elements not found for numericInputValidations');
+        return;
     }
 
     const numericInputs = [
@@ -1767,12 +1702,11 @@ function keyboardShortcuts() {
         // Ctrl+N or Command+N: New Trip
         if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
             e.preventDefault();
-            const sidePanel = document.getElementById('side-panel');
-            if (sidePanel && sidePanel.classList.contains('collapsed')) {
+            const elements = getDomElements();
+            if (elements.sidePanel && elements.sidePanel.classList.contains('collapsed')) {
                 resetForm();
-                const panelTitle = document.getElementById('panel-title');
-                if (panelTitle) {
-                    panelTitle.textContent = 'Add New Trip';
+                if (elements.panelTitle) {
+                    elements.panelTitle.textContent = 'Add New Trip';
                 }
                 toggleSidePanel(true);
             }
@@ -1780,8 +1714,8 @@ function keyboardShortcuts() {
         
         // Escape: Close panel
         if (e.key === 'Escape') {
-            const sidePanel = document.getElementById('side-panel');
-            if (sidePanel && !sidePanel.classList.contains('collapsed')) {
+            const elements = getDomElements();
+            if (elements.sidePanel && !elements.sidePanel.classList.contains('collapsed')) {
                 toggleSidePanel(false);
             }
         }
@@ -1796,12 +1730,11 @@ function keyboardShortcuts() {
         
         // Ctrl+S or Command+S: Save current trip
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            const sidePanel = document.getElementById('side-panel');
-            if (sidePanel && !sidePanel.classList.contains('collapsed')) {
+            const elements = getDomElements();
+            if (elements.sidePanel && !elements.sidePanel.classList.contains('collapsed')) {
                 e.preventDefault();
-                const saveTripBtn = document.getElementById('save-trip-btn');
-                if (saveTripBtn) {
-                    saveTripBtn.click();
+                if (elements.saveTripBtn) {
+                    elements.saveTripBtn.click();
                 }
             }
         }
@@ -1827,17 +1760,9 @@ function setupDOMElements() {
 
 function setupEventListeners() {
     // Get DOM elements when function is called
-    const elements = {
-        addTripBtn: document.getElementById('add-trip-btn'),
-        firstTripBtn: document.getElementById('first-trip-btn'),
-        panelClose: document.getElementById('panel-close'),
-        cancelBtn: document.getElementById('cancel-btn'),
-        tripForm: document.getElementById('trip-form'),
-        exportBtn: document.getElementById('export-btn'),
-        clearAllBtn: document.getElementById('clear-all-btn')
-    };
+    const elements = getDomElements();
 
-    // Check if all elements exist and add event listeners
+    // Check if required elements exist and add event listeners
     if (elements.addTripBtn) {
         elements.addTripBtn.addEventListener('click', addTripBtnHandler);
     }
@@ -1939,28 +1864,27 @@ document.addEventListener('DOMContentLoaded', function() {
     init();
     
     // Validation for "Hours on Holiday" field
-    const holidayHoursInput = document.getElementById('holiday-hours');
-    const holidayHoursValidation = document.getElementById('holiday-hours-validation');
-    
-    if (holidayHoursInput && holidayHoursValidation) {
-        function validateHolidayHoursInput() {
-            let value = parseFloat(holidayHoursInput.value);
-            if (isNaN(value)) value = 0;
-            if (value > 24) {
-                holidayHoursInput.value = 24;
-                holidayHoursValidation.textContent = "Maximum is 24 hours";
-                holidayHoursValidation.style.display = "block";
-                holidayHoursInput.setAttribute('aria-invalid', 'true');
-            } else {
-                holidayHoursValidation.style.display = "none";
-                holidayHoursInput.removeAttribute('aria-invalid');
-            }
+const elements = getDomElements();
+
+if (elements.holidayHoursInput && elements.holidayHoursValidation) {
+    function validateHolidayHoursInput() {
+        let value = parseFloat(elements.holidayHoursInput.value);
+        if (isNaN(value)) value = 0;
+        if (value > 24) {
+            elements.holidayHoursInput.value = 24;
+            elements.holidayHoursValidation.textContent = "Maximum is 24 hours";
+            elements.holidayHoursValidation.style.display = "block";
+            elements.holidayHoursInput.setAttribute('aria-invalid', 'true');
+        } else {
+            elements.holidayHoursValidation.style.display = "none";
+            elements.holidayHoursInput.removeAttribute('aria-invalid');
         }
-        
-        // Validate on input and blur
-        holidayHoursInput.addEventListener('input', validateHolidayHoursInput);
-        holidayHoursInput.addEventListener('blur', validateHolidayHoursInput);
     }
+    
+    // Validate on input and blur
+    elements.holidayHoursInput.addEventListener('input', validateHolidayHoursInput);
+    elements.holidayHoursInput.addEventListener('blur', validateHolidayHoursInput);
+}
 });
 
 // Also validate on form submission (inside your validateForm or tripFormSubmitHandler)
@@ -1973,16 +1897,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // --- Calculation Logic for Premiums ---
 function getFlagPremiumMultiplier() {
   // Get DOM elements when function is called
-  const whiteFlagToggle = document.getElementById('white-flag');
-  const purpleFlagToggle = document.getElementById('purple-flag');
-  const purpleFlagPremiumSelect = document.getElementById('purple-flag-premium');
+  const elements = getDomElements();
   
   let premiumMultiplier = 1;
-  if (whiteFlagToggle && whiteFlagToggle.checked) {
+  if (elements.whiteFlagToggle && elements.whiteFlagToggle.checked) {
     premiumMultiplier *= 1.5;
   }
-  if (purpleFlagToggle && purpleFlagToggle.checked) {
-    const purplePremium = parseFloat(purpleFlagPremiumSelect?.value) || 1;
+  if (elements.purpleFlagToggle && elements.purpleFlagToggle.checked) {
+    const purplePremium = parseFloat(elements.purpleFlagPremiumSelect?.value) || 1;
     premiumMultiplier *= purplePremium;
   }
   return premiumMultiplier;
