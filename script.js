@@ -212,11 +212,11 @@ const FORM_FIELDS = {
         { id: ELEMENT_IDS.TAX_RATE, key: 'taxRate' }
     ],
     
-    // Hour/minute pairs
+    // Hour/minute pairs (now with explicit keys)
     hours: [
-        { hours: ELEMENT_IDS.CREDITED_HOURS_HOURS, minutes: ELEMENT_IDS.CREDITED_HOURS_MINUTES, key: 'creditedHours', required: true },
-        { hours: ELEMENT_IDS.TAFB_HOURS, minutes: ELEMENT_IDS.TAFB_MINUTES, key: 'tafbHours', required: true },
-        { hours: ELEMENT_IDS.GALLEY_HOURS_HOURS, minutes: ELEMENT_IDS.GALLEY_HOURS_MINUTES, key: 'galleyHours' }
+        { hours: ELEMENT_IDS.CREDITED_HOURS_HOURS, minutes: ELEMENT_IDS.CREDITED_HOURS_MINUTES, keyHours: 'creditedHoursHours', keyMinutes: 'creditedHoursMinutes', required: true },
+        { hours: ELEMENT_IDS.TAFB_HOURS, minutes: ELEMENT_IDS.TAFB_MINUTES, keyHours: 'tafbHours', keyMinutes: 'tafbMinutes', required: true },
+        { hours: ELEMENT_IDS.GALLEY_HOURS_HOURS, minutes: ELEMENT_IDS.GALLEY_HOURS_MINUTES, keyHours: 'galleyHoursHours', keyMinutes: 'galleyHoursMinutes' }
     ],
     
     // Toggle switches
@@ -325,6 +325,24 @@ const utils = {
     }
 };
 
+// Helper function to get flag display text
+function getFlagDisplayText(trip) {
+    const whiteFlag = trip.whiteFlag === 'Yes' || trip.whiteFlag === true;
+    const purpleFlag = trip.purpleFlag === 'Yes' || trip.purpleFlag === true;
+    
+    if (whiteFlag && purpleFlag) {
+        const purplePremium = parseFloat(trip.purpleFlagPremium) || 1.5;
+        return `White + Purple (${purplePremium * 100}%)`;
+    } else if (whiteFlag) {
+        return 'White Flag (150%)';
+    } else if (purpleFlag) {
+        const purplePremium = parseFloat(trip.purpleFlagPremium) || 1.5;
+        return `Purple Flag (${purplePremium * 100}%)`;
+    } else {
+        return 'None';
+    }
+}
+
 // Hour validation function
 function validateHours() {
     try {
@@ -406,8 +424,8 @@ function getFormData() {
         const hoursElement = $(field.hours);
         const minutesElement = $(field.minutes);
         if (hoursElement && minutesElement) {
-            data[field.key + 'Hours'] = hoursElement.value;
-            data[field.key + 'Minutes'] = minutesElement.value;
+            data[field.keyHours] = hoursElement.value;
+            data[field.keyMinutes] = minutesElement.value;
         }
     });
     
@@ -446,8 +464,8 @@ function setFormData(data) {
         const hoursElement = $(field.hours);
         const minutesElement = $(field.minutes);
         if (hoursElement && minutesElement) {
-            hoursElement.value = data[field.key + 'Hours'] || '';
-            minutesElement.value = data[field.key + 'Minutes'] || '';
+            hoursElement.value = data[field.keyHours] || '';
+            minutesElement.value = data[field.keyMinutes] || '';
         }
     });
     
@@ -510,6 +528,14 @@ function updateToggleLabels() {
 
 // Toggle conditional fields
 function toggleConditionalFields() {
+    // Show/hide purple flag premium dropdown
+    const purpleFlagToggle = $(ELEMENT_IDS.PURPLE_FLAG);
+    const purpleFlagPremiumGroup = $(ELEMENT_IDS.PURPLE_FLAG_DROPDOWN_GROUP);
+    if (purpleFlagToggle && purpleFlagPremiumGroup) {
+        purpleFlagPremiumGroup.style.display = purpleFlagToggle.checked ? 'block' : 'none';
+    }
+
+    // Existing logic for other conditional groups
     FORM_FIELDS.toggles.forEach(field => {
         if (field.group) {
             const group = $(field.group);
@@ -533,21 +559,33 @@ function calculateTripPay(tripData) {
         const dutyHours = utils.parseHM(tripData.tafbHours, tripData.tafbMinutes);
         const tripLength = parseInt(tripData.tripLength) || 1;
         
+        console.log('[TAFB DEBUG] Raw tripData.tafbHours:', tripData.tafbHours, 'tripData.tafbMinutes:', tripData.tafbMinutes);
+        console.log('[TAFB DEBUG] Parsed dutyHours:', dutyHours);
+        
         // Calculate rates and multipliers
         const baseRate = payData.baseRate;
-        const flagMultiplier = (tripData.whiteFlag ? 1.5 : 1) * (tripData.purpleFlag ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1);
+        console.log('[FLAG DEBUG] tripData.whiteFlag:', tripData.whiteFlag, 'tripData.purpleFlag:', tripData.purpleFlag, 'tripData.purpleFlagPremium:', tripData.purpleFlagPremium);
+        const flagMultiplier = ((tripData.whiteFlag === 'Yes' || tripData.whiteFlag === true) ? 1.5 : 1) * ((tripData.purpleFlag === 'Yes' || tripData.purpleFlag === true) ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1);
+        console.log('[FLAG DEBUG] flagMultiplier calculation:', `(${(tripData.whiteFlag === 'Yes' || tripData.whiteFlag === true) ? 1.5 : 1}) * (${(tripData.purpleFlag === 'Yes' || tripData.purpleFlag === true) ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1}) = ${flagMultiplier}`);
         const effectiveRate = baseRate * flagMultiplier;
 
         // Calculate pay components
         const payComponents = {
             basePay: creditedHours * effectiveRate,
-            galleyPay: tripData.galleyPay === 'Yes' ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) : 0,
+            galleyPay: tripData.galleyPay === 'Yes' ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) * effectiveRate : 0,
             purserPay: 0,
             perDiem: dutyHours * (tripData.intlOverride === 'Yes' ? CONSTANTS.INTERNATIONAL_PER_DIEM : CONSTANTS.DOMESTIC_PER_DIEM),
             languagePay: tripData.languagePay === 'Yes' ? creditedHours * 2.50 : 0,
             intlOverridePay: tripData.intlPayOverride === 'Yes' ? creditedHours * 2 : 0,
             holidayPay: 0
         };
+        // Debug logs for each pay component
+        console.log('[PAY DEBUG] === PAY COMPONENT CALCULATIONS ===');
+        console.log('[PAY DEBUG] basePay:', creditedHours, '*', effectiveRate, '=', payComponents.basePay);
+        console.log('[PAY DEBUG] galleyPay:', (tripData.galleyPay === 'Yes' ? `${tripData.galleyHoursHours}h ${tripData.galleyHoursMinutes}m * ${effectiveRate}` : 'N/A'), '=', payComponents.galleyPay);
+        console.log('[PAY DEBUG] perDiem:', dutyHours, '*', (tripData.intlOverride === 'Yes' ? CONSTANTS.INTERNATIONAL_PER_DIEM : CONSTANTS.DOMESTIC_PER_DIEM), '=', payComponents.perDiem);
+        console.log('[PAY DEBUG] languagePay:', (tripData.languagePay === 'Yes' ? `${creditedHours} * 2.50` : 'N/A'), '=', payComponents.languagePay);
+        console.log('[PAY DEBUG] intlOverridePay:', (tripData.intlPayOverride === 'Yes' ? `${creditedHours} * 2` : 'N/A'), '=', payComponents.intlOverridePay);
         
         // Calculate purser pay
         if (tripData.purserPay === 'Yes') {
@@ -556,18 +594,32 @@ function calculateTripPay(tripData) {
             const rates = { 'Narrow1': [1, 2], 'Narrow2': [2, 3], 'Wide': [3, 4] };
             const [usRate, nonUSRate] = rates[tripData.aircraftType] || rates['Narrow1'];
             payComponents.purserPay = purserUS * usRate + purserNonUS * nonUSRate;
+            console.log('[PAY DEBUG] purserPay:', purserUS, '*', usRate, '+', purserNonUS, '*', nonUSRate, '=', payComponents.purserPay);
+        } else {
+            console.log('[PAY DEBUG] purserPay: N/A =', payComponents.purserPay);
         }
         
         // Calculate holiday pay
         if (tripData.holidayPay === 'Yes' && dutyHours > 0) {
             const holidayHours = parseFloat(tripData.holidayHours) || 0;
             payComponents.holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
+            console.log('[PAY DEBUG] holidayPay: (', effectiveRate, '*', creditedHours, '/', dutyHours, ')*', holidayHours, '=', payComponents.holidayPay);
+        } else {
+            console.log('[PAY DEBUG] holidayPay: N/A =', payComponents.holidayPay);
         }
 
         // Calculate totals
         const totalGrossPay = Object.values(payComponents).reduce((sum, val) => sum + val, 0);
         const retirementDeduction = totalGrossPay * (parseFloat(tripData.retirementPercentage) / 100);
         const netPayEstimate = (totalGrossPay - retirementDeduction) * (1 - parseFloat(tripData.taxRate) / 100);
+        
+        console.log('[PAY DEBUG] totalGrossPay:', Object.entries(payComponents).map(([k,v])=>`${k}: ${v}`).join(', '), '=', totalGrossPay);
+        console.log('[PAY DEBUG] retirementDeduction:', totalGrossPay, '*', (parseFloat(tripData.retirementPercentage) / 100), '=', retirementDeduction);
+        console.log('[PAY DEBUG] netPayEstimate:', '(', totalGrossPay, '-', retirementDeduction, ')* (1 -', (parseFloat(tripData.taxRate) / 100), ') =', netPayEstimate);
+        
+        console.log('[TAFB DEBUG] Final calculation:', {
+            creditedHours, dutyHours, tripLength, baseRate, flagMultiplier, effectiveRate, ...payComponents, totalGrossPay, netPayEstimate
+        });
         
         return {
             ...payComponents,
@@ -719,6 +771,7 @@ function renderTripCard(trip) {
     
     const detailData = [
         { label: 'Pay Year', value: trip.payYear || 'Year 1' },
+        { label: 'Flags', value: getFlagDisplayText(trip) },
         { label: 'Credited Hours', value: `${trip.creditedHoursHours || 0}h ${trip.creditedHoursMinutes || 0}m` },
         { label: 'TAFB time', value: `${trip.tafbHours || 0}h ${trip.tafbMinutes || 0}m` },
         { label: 'Trip Length', value: `${trip.tripLength || 1} day${parseInt(trip.tripLength) > 1 ? 's' : ''}` },
@@ -759,14 +812,26 @@ function renderTripCard(trip) {
         { label: 'Daily Value', value: `${utils.formatCurrency(calculation.perDayValue)}/day` }
     ];
     
-    summaryData.forEach(item => {
-        if (!item.condition || item.condition) {
-            const summaryItem = document.createElement('div');
-            summaryItem.className = 'trip-summary-item';
-            if (item.highlight) summaryItem.classList.add('highlight');
-            summaryItem.innerHTML = `<span class="trip-summary-label">${item.label}</span><span class="trip-summary-value">${item.value}</span>`;
-            summary.appendChild(summaryItem);
+    // Filter out zero-value items
+    console.log('[UI DEBUG] Summary data before filtering:', summaryData.map(item => ({ label: item.label, condition: item.condition, value: item.value })));
+    const filteredSummaryData = summaryData.filter(item => {
+        console.log('[UI DEBUG] Processing item:', item.label, 'condition:', item.condition, 'condition type:', typeof item.condition);
+        if (item.condition === undefined || item.condition === null) {
+            console.log('[UI DEBUG] Showing item without condition:', item.label);
+            return true; // Always show items without conditions
         }
+        const shouldShow = item.condition;
+        console.log('[UI DEBUG] Item with condition:', item.label, 'condition:', item.condition, 'shouldShow:', shouldShow);
+        return shouldShow; // Only show items that meet their condition
+    });
+    console.log('[UI DEBUG] Filtered summary data:', filteredSummaryData.map(item => item.label));
+    
+    filteredSummaryData.forEach(item => {
+        const summaryItem = document.createElement('div');
+        summaryItem.className = 'trip-summary-item';
+        if (item.highlight) summaryItem.classList.add('highlight');
+        summaryItem.innerHTML = `<span class="trip-summary-label">${item.label}</span><span class="trip-summary-value">${item.value}</span>`;
+        summary.appendChild(summaryItem);
     });
     
     body.appendChild(summary);
