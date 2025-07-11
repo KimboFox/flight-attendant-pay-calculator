@@ -238,6 +238,74 @@ const FORM_FIELDS = {
     ]
 };
 
+// Unified form field processor
+const formProcessor = {
+    getData: () => {
+        const data = {};
+        
+        // Process all field types
+        Object.entries(FORM_FIELDS).forEach(([type, fields]) => {
+            fields.forEach(field => {
+                if (type === 'hours') {
+                    const hoursElement = $(field.hours);
+                    const minutesElement = $(field.minutes);
+                    if (hoursElement && minutesElement) {
+                        data[field.keyHours] = hoursElement.value;
+                        data[field.keyMinutes] = minutesElement.value;
+                    }
+                } else if (type === 'toggles') {
+                    const element = $(field.id);
+                    if (element) {
+                        data[field.key] = element.checked ? 'Yes' : 'No';
+                    }
+                } else {
+                    const element = $(field.id);
+                    if (element) {
+                        data[field.key] = element.value;
+                    }
+                }
+            });
+        });
+        
+        return data;
+    },
+    
+    setData: (data) => {
+        if (!data) return;
+        
+        // Process all field types
+        Object.entries(FORM_FIELDS).forEach(([type, fields]) => {
+            fields.forEach(field => {
+                if (type === 'hours') {
+                    const hoursElement = $(field.hours);
+                    const minutesElement = $(field.minutes);
+                    if (hoursElement && minutesElement) {
+                        hoursElement.value = data[field.keyHours] || '';
+                        minutesElement.value = data[field.keyMinutes] || '';
+                    }
+                } else if (type === 'toggles') {
+                    const element = $(field.id);
+                    const labelElement = $(field.label);
+                    if (element) {
+                        element.checked = data[field.key] === 'Yes';
+                        if (labelElement) {
+                            labelElement.textContent = element.checked ? 'Yes' : 'No';
+                        }
+                    }
+                } else {
+                    const element = $(field.id);
+                    if (element) {
+                        element.value = data[field.key] || field.default || '';
+                    }
+                }
+            });
+        });
+        
+        updateToggleLabels();
+        toggleConditionalFields();
+    }
+};
+
 // Simple DOM helper
 const $ = id => document.getElementById(id);
 
@@ -408,90 +476,8 @@ function validateHours() {
 }
 
 // Data-driven form operations
-function getFormData() {
-    const data = {};
-    
-    // Process text fields
-    FORM_FIELDS.text.forEach(field => {
-        const element = $(field.id);
-        if (element) {
-            data[field.key] = element.value;
-        }
-    });
-    
-    // Process hour fields
-    FORM_FIELDS.hours.forEach(field => {
-        const hoursElement = $(field.hours);
-        const minutesElement = $(field.minutes);
-        if (hoursElement && minutesElement) {
-            data[field.keyHours] = hoursElement.value;
-            data[field.keyMinutes] = minutesElement.value;
-        }
-    });
-    
-    // Process toggles
-    FORM_FIELDS.toggles.forEach(field => {
-        const element = $(field.id);
-        if (element) {
-            data[field.key] = element.checked ? 'Yes' : 'No';
-        }
-    });
-    
-    // Process number fields
-    FORM_FIELDS.numbers.forEach(field => {
-        const element = $(field.id);
-        if (element) {
-            data[field.key] = element.value;
-        }
-    });
-    
-    return data;
-}
-
-function setFormData(data) {
-    if (!data) return;
-    
-    // Process text fields
-    FORM_FIELDS.text.forEach(field => {
-        const element = $(field.id);
-        if (element) {
-            element.value = data[field.key] || field.default || '';
-        }
-    });
-    
-    // Process hour fields
-    FORM_FIELDS.hours.forEach(field => {
-        const hoursElement = $(field.hours);
-        const minutesElement = $(field.minutes);
-        if (hoursElement && minutesElement) {
-            hoursElement.value = data[field.keyHours] || '';
-            minutesElement.value = data[field.keyMinutes] || '';
-        }
-    });
-    
-    // Process toggles
-    FORM_FIELDS.toggles.forEach(field => {
-        const element = $(field.id);
-        const labelElement = $(field.label);
-        if (element) {
-            element.checked = data[field.key] === 'Yes';
-            if (labelElement) {
-                labelElement.textContent = element.checked ? 'Yes' : 'No';
-            }
-        }
-    });
-    
-    // Process number fields
-    FORM_FIELDS.numbers.forEach(field => {
-        const element = $(field.id);
-        if (element) {
-            element.value = data[field.key] || '';
-        }
-    });
-    
-    updateToggleLabels();
-    toggleConditionalFields();
-}
+const getFormData = () => formProcessor.getData();
+const setFormData = (data) => formProcessor.setData(data);
 
 // Simple form reset
 function resetForm() {
@@ -559,14 +545,11 @@ function calculateTripPay(tripData) {
         const dutyHours = utils.parseHM(tripData.tafbHours, tripData.tafbMinutes);
         const tripLength = parseInt(tripData.tripLength) || 1;
         
-        console.log('[TAFB DEBUG] Raw tripData.tafbHours:', tripData.tafbHours, 'tripData.tafbMinutes:', tripData.tafbMinutes);
-        console.log('[TAFB DEBUG] Parsed dutyHours:', dutyHours);
+
         
         // Calculate rates and multipliers
         const baseRate = payData.baseRate;
-        console.log('[FLAG DEBUG] tripData.whiteFlag:', tripData.whiteFlag, 'tripData.purpleFlag:', tripData.purpleFlag, 'tripData.purpleFlagPremium:', tripData.purpleFlagPremium);
         const flagMultiplier = ((tripData.whiteFlag === 'Yes' || tripData.whiteFlag === true) ? 1.5 : 1) * ((tripData.purpleFlag === 'Yes' || tripData.purpleFlag === true) ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1);
-        console.log('[FLAG DEBUG] flagMultiplier calculation:', `(${(tripData.whiteFlag === 'Yes' || tripData.whiteFlag === true) ? 1.5 : 1}) * (${(tripData.purpleFlag === 'Yes' || tripData.purpleFlag === true) ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1}) = ${flagMultiplier}`);
         const effectiveRate = baseRate * flagMultiplier;
 
         // Calculate pay components
@@ -579,13 +562,7 @@ function calculateTripPay(tripData) {
             intlOverridePay: tripData.intlPayOverride === 'Yes' ? creditedHours * 2 : 0,
             holidayPay: 0
         };
-        // Debug logs for each pay component
-        console.log('[PAY DEBUG] === PAY COMPONENT CALCULATIONS ===');
-        console.log('[PAY DEBUG] basePay:', creditedHours, '*', effectiveRate, '=', payComponents.basePay);
-        console.log('[PAY DEBUG] galleyPay:', (tripData.galleyPay === 'Yes' ? `${tripData.galleyHoursHours}h ${tripData.galleyHoursMinutes}m * ${effectiveRate}` : 'N/A'), '=', payComponents.galleyPay);
-        console.log('[PAY DEBUG] perDiem:', dutyHours, '*', (tripData.intlOverride === 'Yes' ? CONSTANTS.INTERNATIONAL_PER_DIEM : CONSTANTS.DOMESTIC_PER_DIEM), '=', payComponents.perDiem);
-        console.log('[PAY DEBUG] languagePay:', (tripData.languagePay === 'Yes' ? `${creditedHours} * 2.50` : 'N/A'), '=', payComponents.languagePay);
-        console.log('[PAY DEBUG] intlOverridePay:', (tripData.intlPayOverride === 'Yes' ? `${creditedHours} * 2` : 'N/A'), '=', payComponents.intlOverridePay);
+
         
         // Calculate purser pay
         if (tripData.purserPay === 'Yes') {
@@ -594,18 +571,12 @@ function calculateTripPay(tripData) {
             const rates = { 'Narrow1': [1, 2], 'Narrow2': [2, 3], 'Wide': [3, 4] };
             const [usRate, nonUSRate] = rates[tripData.aircraftType] || rates['Narrow1'];
             payComponents.purserPay = purserUS * usRate + purserNonUS * nonUSRate;
-            console.log('[PAY DEBUG] purserPay:', purserUS, '*', usRate, '+', purserNonUS, '*', nonUSRate, '=', payComponents.purserPay);
-        } else {
-            console.log('[PAY DEBUG] purserPay: N/A =', payComponents.purserPay);
         }
         
         // Calculate holiday pay
         if (tripData.holidayPay === 'Yes' && dutyHours > 0) {
             const holidayHours = parseFloat(tripData.holidayHours) || 0;
             payComponents.holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
-            console.log('[PAY DEBUG] holidayPay: (', effectiveRate, '*', creditedHours, '/', dutyHours, ')*', holidayHours, '=', payComponents.holidayPay);
-        } else {
-            console.log('[PAY DEBUG] holidayPay: N/A =', payComponents.holidayPay);
         }
 
         // Calculate totals
@@ -613,13 +584,7 @@ function calculateTripPay(tripData) {
         const retirementDeduction = totalGrossPay * (parseFloat(tripData.retirementPercentage) / 100);
         const netPayEstimate = (totalGrossPay - retirementDeduction) * (1 - parseFloat(tripData.taxRate) / 100);
         
-        console.log('[PAY DEBUG] totalGrossPay:', Object.entries(payComponents).map(([k,v])=>`${k}: ${v}`).join(', '), '=', totalGrossPay);
-        console.log('[PAY DEBUG] retirementDeduction:', totalGrossPay, '*', (parseFloat(tripData.retirementPercentage) / 100), '=', retirementDeduction);
-        console.log('[PAY DEBUG] netPayEstimate:', '(', totalGrossPay, '-', retirementDeduction, ')* (1 -', (parseFloat(tripData.taxRate) / 100), ') =', netPayEstimate);
-        
-        console.log('[TAFB DEBUG] Final calculation:', {
-            creditedHours, dutyHours, tripLength, baseRate, flagMultiplier, effectiveRate, ...payComponents, totalGrossPay, netPayEstimate
-        });
+
         
         return {
             ...payComponents,
@@ -778,13 +743,19 @@ function renderTripCard(trip) {
         { label: 'Galley Hours', value: `${trip.galleyHoursHours || 0}h ${trip.galleyHoursMinutes || 0}m`, condition: trip.galleyPay === 'Yes' }
     ];
     
-    detailData.forEach(item => {
-        if (!item.condition || item.condition) {
-            const row = document.createElement('div');
-            row.className = 'trip-detail';
-            row.innerHTML = `<span class="trip-detail-label">${item.label}</span><span class="trip-detail-value">${item.value}</span>`;
-            details.appendChild(row);
+    // Filter out conditional items that don't meet their condition
+    const filteredDetailData = detailData.filter(item => {
+        if (item.condition === undefined || item.condition === null) {
+            return true; // Always show items without conditions
         }
+        return item.condition; // Only show items that meet their condition
+    });
+    
+    filteredDetailData.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'trip-detail';
+        row.innerHTML = `<span class="trip-detail-label">${item.label}</span><span class="trip-detail-value">${item.value}</span>`;
+        details.appendChild(row);
     });
     
     body.appendChild(details);
@@ -812,19 +783,13 @@ function renderTripCard(trip) {
         { label: 'Daily Value', value: `${utils.formatCurrency(calculation.perDayValue)}/day` }
     ];
     
-    // Filter out zero-value items
-    console.log('[UI DEBUG] Summary data before filtering:', summaryData.map(item => ({ label: item.label, condition: item.condition, value: item.value })));
-    const filteredSummaryData = summaryData.filter(item => {
-        console.log('[UI DEBUG] Processing item:', item.label, 'condition:', item.condition, 'condition type:', typeof item.condition);
-        if (item.condition === undefined || item.condition === null) {
-            console.log('[UI DEBUG] Showing item without condition:', item.label);
-            return true; // Always show items without conditions
-        }
-        const shouldShow = item.condition;
-        console.log('[UI DEBUG] Item with condition:', item.label, 'condition:', item.condition, 'shouldShow:', shouldShow);
-        return shouldShow; // Only show items that meet their condition
-    });
-    console.log('[UI DEBUG] Filtered summary data:', filteredSummaryData.map(item => item.label));
+            // Filter out zero-value items
+        const filteredSummaryData = summaryData.filter(item => {
+            if (item.condition === undefined || item.condition === null) {
+                return true; // Always show items without conditions
+            }
+            return item.condition; // Only show items that meet their condition
+        });
     
     filteredSummaryData.forEach(item => {
         const summaryItem = document.createElement('div');
@@ -940,15 +905,15 @@ const tripOperations = {
                 renderTrips();
                 showToast(`Trip "${tripName}" deleted. <a href="#" id="undo-delete">Undo</a>`, 'info');
                 
-        setTimeout(() => {
-            const undoLink = document.getElementById('undo-delete');
-            if (undoLink) {
+                setTimeout(() => {
+                    const undoLink = document.getElementById('undo-delete');
+                    if (undoLink) {
                         undoLink.addEventListener('click', (e) => {
-                    e.preventDefault();
+                            e.preventDefault();
                             history.undoLastOperation();
-                });
-            }
-        }, 10);
+                        });
+                    }
+                }, 10);
             }
         }
     },
@@ -963,11 +928,8 @@ const tripOperations = {
     }
 };
 
-// Convenience functions
-const addTrip = tripOperations.add;
-const updateTrip = tripOperations.update;
-const deleteTrip = tripOperations.delete;
-const editTrip = tripOperations.edit;
+// Destructure for convenience
+const { add: addTrip, update: updateTrip, delete: deleteTrip, edit: editTrip } = tripOperations;
 
 // Form submission with validation
 function handleFormSubmit(e) {
@@ -1025,15 +987,13 @@ function validateForm() {
 
 // Setup event listeners
 function setupEventListeners() {
-    // Form submission
+    // Core event listeners
     $(ELEMENT_IDS.TRIP_FORM).addEventListener('submit', handleFormSubmit);
     
     // Button handlers
     Object.entries(BUTTONS).forEach(([id, handler]) => {
         const button = $(id);
-        if (button) {
-            button.addEventListener('click', handler);
-        }
+        if (button) button.addEventListener('click', handler);
     });
     
     // Toggle listeners
@@ -1043,12 +1003,12 @@ function setupEventListeners() {
             toggle.addEventListener('change', () => {
                 updateToggleLabels();
                 toggleConditionalFields();
-                validateHours(); // Validate hours when toggles change
+                validateHours();
             });
         }
     });
     
-    // Input validation patterns
+    // Input validation
     const validationPatterns = {
         numeric: { regex: /^\d*\.?\d*$/, min: 0, max: Infinity },
         minutes: { regex: /^\d*$/, min: 0, max: 59 },
@@ -1056,14 +1016,14 @@ function setupEventListeners() {
         holidayHours: { regex: /^\d*\.?\d*$/, min: 0, max: 24 }
     };
     
-    // Apply validation to all inputs
-    const allInputs = [
+    // Apply validation to inputs
+    const inputsToValidate = [
         ...FORM_FIELDS.text.filter(f => f.id === ELEMENT_IDS.RETIREMENT_PERCENTAGE || f.id === ELEMENT_IDS.TAX_RATE),
         ...FORM_FIELDS.numbers,
         ...FORM_FIELDS.hours.map(f => ({ id: f.minutes, type: 'minutes' }))
     ];
     
-    allInputs.forEach(field => {
+    inputsToValidate.forEach(field => {
         const input = $(field.id);
         if (!input) return;
         
