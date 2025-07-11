@@ -83,7 +83,84 @@ const ELEMENT_IDS = {
     HOLIDAY_HOURS_VALIDATION: 'holiday-hours-validation'
 };
 
-// Simple DOM helper - eliminates repetitive getElementById calls
+// Export and clear operations
+const exportTrips = () => {
+    if (state.trips.length === 0) {
+        showToast('No trips to export', 'warning');
+        return;
+    }
+    
+    const data = JSON.stringify({ trips: state.trips, exportDate: new Date().toISOString() }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'flight_trips_export.json';
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('Trips exported successfully', 'success');
+};
+
+const clearAllTrips = () => {
+    if (state.trips.length > 0 && confirm('Clear all trips?')) {
+        state.trips = [];
+        renderTrips();
+        showToast('All trips cleared', 'info');
+    }
+};
+
+// Button configuration
+const BUTTONS = {
+    [ELEMENT_IDS.ADD_TRIP_BTN]: () => { resetForm(); toggleSidePanel(true); },
+    [ELEMENT_IDS.PANEL_CLOSE]: () => toggleSidePanel(false),
+    [ELEMENT_IDS.CANCEL_BTN]: () => toggleSidePanel(false),
+    [ELEMENT_IDS.EXPORT_BTN]: exportTrips,
+    [ELEMENT_IDS.CLEAR_ALL_BTN]: clearAllTrips
+};
+
+// Data-driven form field configuration
+const FORM_FIELDS = {
+    // Simple text inputs
+    text: [
+        { id: ELEMENT_IDS.TRIP_NAME, key: 'name', required: true },
+        { id: ELEMENT_IDS.PAY_YEAR, key: 'payYear', required: true },
+        { id: ELEMENT_IDS.TRIP_LENGTH, key: 'tripLength', required: true },
+        { id: ELEMENT_IDS.PURPLE_FLAG_PREMIUM, key: 'purpleFlagPremium', default: '1.5' },
+        { id: ELEMENT_IDS.AIRCRAFT_TYPE, key: 'aircraftType', default: 'Narrow1' },
+        { id: ELEMENT_IDS.HOLIDAY_HOURS, key: 'holidayHours' },
+        { id: ELEMENT_IDS.RETIREMENT_PERCENTAGE, key: 'retirementPercentage' },
+        { id: ELEMENT_IDS.TAX_RATE, key: 'taxRate' }
+    ],
+    
+    // Hour/minute pairs
+    hours: [
+        { hours: ELEMENT_IDS.CREDITED_HOURS_HOURS, minutes: ELEMENT_IDS.CREDITED_HOURS_MINUTES, key: 'creditedHours', required: true },
+        { hours: ELEMENT_IDS.TAFB_HOURS, minutes: ELEMENT_IDS.TAFB_MINUTES, key: 'tafbHours', required: true },
+        { hours: ELEMENT_IDS.GALLEY_HOURS_HOURS, minutes: ELEMENT_IDS.GALLEY_HOURS_MINUTES, key: 'galleyHours' }
+    ],
+    
+    // Toggle switches
+    toggles: [
+        { id: ELEMENT_IDS.WHITE_FLAG, key: 'whiteFlag', label: ELEMENT_IDS.WHITE_FLAG_LABEL },
+        { id: ELEMENT_IDS.PURPLE_FLAG, key: 'purpleFlag', label: ELEMENT_IDS.PURPLE_FLAG_LABEL },
+        { id: ELEMENT_IDS.GALLEY_PAY, key: 'galleyPay', label: ELEMENT_IDS.GALLEY_PAY_LABEL, group: ELEMENT_IDS.GALLEY_HOURS_GROUP },
+        { id: ELEMENT_IDS.PURSER_PAY, key: 'purserPay', label: ELEMENT_IDS.PURSER_PAY_LABEL, group: ELEMENT_IDS.PURSER_FIELDS_GROUP },
+        { id: ELEMENT_IDS.INTL_OVERRIDE, key: 'intlOverride', label: ELEMENT_IDS.INTL_OVERRIDE_LABEL },
+        { id: ELEMENT_IDS.INTL_PAY_OVERRIDE, key: 'intlPayOverride', label: ELEMENT_IDS.INTL_PAY_OVERRIDE_LABEL },
+        { id: ELEMENT_IDS.LANGUAGE_PAY, key: 'languagePay', label: ELEMENT_IDS.LANGUAGE_PAY_LABEL },
+        { id: ELEMENT_IDS.HOLIDAY_PAY, key: 'holidayPay', label: ELEMENT_IDS.HOLIDAY_PAY_LABEL, group: ELEMENT_IDS.HOLIDAY_HOURS_GROUP }
+    ],
+    
+    // Number inputs
+    numbers: [
+        { id: ELEMENT_IDS.PURSER_US_HOURS, key: 'purserUSHours' },
+        { id: ELEMENT_IDS.PURSER_NON_US_HOURS, key: 'purserNonUSHours' }
+    ]
+};
+
+// Simple DOM helper
 const $ = id => document.getElementById(id);
 
 // Constants
@@ -234,64 +311,87 @@ function validateHours() {
     }
 }
 
-// Simple form data extractor
+// Data-driven form operations
 function getFormData() {
-    return {
-        name: $(ELEMENT_IDS.TRIP_NAME).value,
-        payYear: $(ELEMENT_IDS.PAY_YEAR).value,
-        whiteFlag: $(ELEMENT_IDS.WHITE_FLAG).checked,
-        purpleFlag: $(ELEMENT_IDS.PURPLE_FLAG).checked,
-        purpleFlagPremium: $(ELEMENT_IDS.PURPLE_FLAG_PREMIUM).value,
-        creditedHoursHours: $(ELEMENT_IDS.CREDITED_HOURS_HOURS).value,
-        creditedHoursMinutes: $(ELEMENT_IDS.CREDITED_HOURS_MINUTES).value,
-        tafbHours: $(ELEMENT_IDS.TAFB_HOURS).value,
-        tafbMinutes: $(ELEMENT_IDS.TAFB_MINUTES).value,
-        tripLength: $(ELEMENT_IDS.TRIP_LENGTH).value,
-        galleyPay: $(ELEMENT_IDS.GALLEY_PAY).checked ? 'Yes' : 'No',
-        galleyHoursHours: $(ELEMENT_IDS.GALLEY_HOURS_HOURS).value,
-        galleyHoursMinutes: $(ELEMENT_IDS.GALLEY_HOURS_MINUTES).value,
-        purserPay: $(ELEMENT_IDS.PURSER_PAY).checked ? 'Yes' : 'No',
-        aircraftType: $(ELEMENT_IDS.AIRCRAFT_TYPE).value,
-        purserUSHours: $(ELEMENT_IDS.PURSER_US_HOURS).value,
-        purserNonUSHours: $(ELEMENT_IDS.PURSER_NON_US_HOURS).value,
-        intlOverride: $(ELEMENT_IDS.INTL_OVERRIDE).checked ? 'Yes' : 'No',
-        intlPayOverride: $(ELEMENT_IDS.INTL_PAY_OVERRIDE).checked ? 'Yes' : 'No',
-        languagePay: $(ELEMENT_IDS.LANGUAGE_PAY).checked ? 'Yes' : 'No',
-        holidayPay: $(ELEMENT_IDS.HOLIDAY_PAY).checked ? 'Yes' : 'No',
-        holidayHours: $(ELEMENT_IDS.HOLIDAY_HOURS).value,
-        retirementPercentage: $(ELEMENT_IDS.RETIREMENT_PERCENTAGE).value,
-        taxRate: $(ELEMENT_IDS.TAX_RATE).value
-    };
+    const data = {};
+    
+    // Process text fields
+    FORM_FIELDS.text.forEach(field => {
+        const element = $(field.id);
+        if (element) {
+            data[field.key] = element.value;
+        }
+    });
+    
+    // Process hour fields
+    FORM_FIELDS.hours.forEach(field => {
+        const hoursElement = $(field.hours);
+        const minutesElement = $(field.minutes);
+        if (hoursElement && minutesElement) {
+            data[field.key + 'Hours'] = hoursElement.value;
+            data[field.key + 'Minutes'] = minutesElement.value;
+        }
+    });
+    
+    // Process toggles
+    FORM_FIELDS.toggles.forEach(field => {
+        const element = $(field.id);
+        if (element) {
+            data[field.key] = element.checked ? 'Yes' : 'No';
+        }
+    });
+    
+    // Process number fields
+    FORM_FIELDS.numbers.forEach(field => {
+        const element = $(field.id);
+        if (element) {
+            data[field.key] = element.value;
+        }
+    });
+    
+    return data;
 }
 
-// Simple form data setter
 function setFormData(data) {
     if (!data) return;
     
-    $(ELEMENT_IDS.TRIP_NAME).value = data.name || '';
-    $(ELEMENT_IDS.PAY_YEAR).value = data.payYear || 'Year 1';
-    $(ELEMENT_IDS.WHITE_FLAG).checked = data.whiteFlag || false;
-    $(ELEMENT_IDS.PURPLE_FLAG).checked = data.purpleFlag || false;
-    $(ELEMENT_IDS.PURPLE_FLAG_PREMIUM).value = data.purpleFlagPremium || '1.5';
-    $(ELEMENT_IDS.CREDITED_HOURS_HOURS).value = data.creditedHoursHours || '';
-    $(ELEMENT_IDS.CREDITED_HOURS_MINUTES).value = data.creditedHoursMinutes || '';
-    $(ELEMENT_IDS.TAFB_HOURS).value = data.tafbHours || '';
-    $(ELEMENT_IDS.TAFB_MINUTES).value = data.tafbMinutes || '';
-    $(ELEMENT_IDS.TRIP_LENGTH).value = data.tripLength || '1';
-    $(ELEMENT_IDS.GALLEY_PAY).checked = data.galleyPay === 'Yes';
-    $(ELEMENT_IDS.GALLEY_HOURS_HOURS).value = data.galleyHoursHours || '';
-    $(ELEMENT_IDS.GALLEY_HOURS_MINUTES).value = data.galleyHoursMinutes || '';
-    $(ELEMENT_IDS.PURSER_PAY).checked = data.purserPay === 'Yes';
-    $(ELEMENT_IDS.AIRCRAFT_TYPE).value = data.aircraftType || 'Narrow1';
-    $(ELEMENT_IDS.PURSER_US_HOURS).value = data.purserUSHours || '';
-    $(ELEMENT_IDS.PURSER_NON_US_HOURS).value = data.purserNonUSHours || '';
-    $(ELEMENT_IDS.INTL_OVERRIDE).checked = data.intlOverride === 'Yes';
-    $(ELEMENT_IDS.INTL_PAY_OVERRIDE).checked = data.intlPayOverride === 'Yes';
-    $(ELEMENT_IDS.LANGUAGE_PAY).checked = data.languagePay === 'Yes';
-    $(ELEMENT_IDS.HOLIDAY_PAY).checked = data.holidayPay === 'Yes';
-    $(ELEMENT_IDS.HOLIDAY_HOURS).value = data.holidayHours || '';
-    $(ELEMENT_IDS.RETIREMENT_PERCENTAGE).value = data.retirementPercentage || '';
-    $(ELEMENT_IDS.TAX_RATE).value = data.taxRate || '';
+    // Process text fields
+    FORM_FIELDS.text.forEach(field => {
+        const element = $(field.id);
+        if (element) {
+            element.value = data[field.key] || field.default || '';
+        }
+    });
+    
+    // Process hour fields
+    FORM_FIELDS.hours.forEach(field => {
+        const hoursElement = $(field.hours);
+        const minutesElement = $(field.minutes);
+        if (hoursElement && minutesElement) {
+            hoursElement.value = data[field.key + 'Hours'] || '';
+            minutesElement.value = data[field.key + 'Minutes'] || '';
+        }
+    });
+    
+    // Process toggles
+    FORM_FIELDS.toggles.forEach(field => {
+        const element = $(field.id);
+        const labelElement = $(field.label);
+        if (element) {
+            element.checked = data[field.key] === 'Yes';
+            if (labelElement) {
+                labelElement.textContent = element.checked ? 'Yes' : 'No';
+            }
+        }
+    });
+    
+    // Process number fields
+    FORM_FIELDS.numbers.forEach(field => {
+        const element = $(field.id);
+        if (element) {
+            element.value = data[field.key] || '';
+        }
+    });
     
     updateToggleLabels();
     toggleConditionalFields();
@@ -321,20 +421,9 @@ function resetForm() {
 
 // Update toggle labels
 function updateToggleLabels() {
-    const toggles = [
-        { toggle: ELEMENT_IDS.WHITE_FLAG, label: ELEMENT_IDS.WHITE_FLAG_LABEL },
-        { toggle: ELEMENT_IDS.PURPLE_FLAG, label: ELEMENT_IDS.PURPLE_FLAG_LABEL },
-        { toggle: ELEMENT_IDS.GALLEY_PAY, label: ELEMENT_IDS.GALLEY_PAY_LABEL },
-        { toggle: ELEMENT_IDS.PURSER_PAY, label: ELEMENT_IDS.PURSER_PAY_LABEL },
-        { toggle: ELEMENT_IDS.INTL_OVERRIDE, label: ELEMENT_IDS.INTL_OVERRIDE_LABEL },
-        { toggle: ELEMENT_IDS.INTL_PAY_OVERRIDE, label: ELEMENT_IDS.INTL_PAY_OVERRIDE_LABEL },
-        { toggle: ELEMENT_IDS.LANGUAGE_PAY, label: ELEMENT_IDS.LANGUAGE_PAY_LABEL },
-        { toggle: ELEMENT_IDS.HOLIDAY_PAY, label: ELEMENT_IDS.HOLIDAY_PAY_LABEL }
-    ];
-    
-    toggles.forEach(({ toggle, label }) => {
-        const toggleElement = $(toggle);
-        const labelElement = $(label);
+    FORM_FIELDS.toggles.forEach(field => {
+        const toggleElement = $(field.id);
+        const labelElement = $(field.label);
         if (toggleElement && labelElement) {
             labelElement.textContent = toggleElement.checked ? 'Yes' : 'No';
         }
@@ -343,17 +432,14 @@ function updateToggleLabels() {
 
 // Toggle conditional fields
 function toggleConditionalFields() {
-    const groups = {
-        [ELEMENT_IDS.PURPLE_FLAG_DROPDOWN_GROUP]: $(ELEMENT_IDS.PURPLE_FLAG).checked,
-        [ELEMENT_IDS.GALLEY_HOURS_GROUP]: $(ELEMENT_IDS.GALLEY_PAY).checked,
-        [ELEMENT_IDS.PURSER_FIELDS_GROUP]: $(ELEMENT_IDS.PURSER_PAY).checked,
-        [ELEMENT_IDS.HOLIDAY_HOURS_GROUP]: $(ELEMENT_IDS.HOLIDAY_PAY).checked
-    };
-    
-    Object.entries(groups).forEach(([groupId, isVisible]) => {
-        const group = $(groupId);
-        if (group) {
-            group.style.display = isVisible ? 'block' : 'none';
+    FORM_FIELDS.toggles.forEach(field => {
+        if (field.group) {
+            const group = $(field.group);
+            const toggle = $(field.id);
+            if (group && toggle) {
+                const isVisible = toggle.checked;
+                group.style.display = isVisible ? 'block' : 'none';
+            }
         }
     });
 }
@@ -364,59 +450,56 @@ function calculateTripPay(tripData) {
         const payYear = tripData.payYear || 'Year 1';
         const payData = PAY_RATES[payYear] || PAY_RATES["Year 1"];
         
-        // Flag premium
-        let flagMultiplier = 1;
-        if (tripData.whiteFlag) flagMultiplier *= 1.5;
-        if (tripData.purpleFlag) flagMultiplier *= parseFloat(tripData.purpleFlagPremium) || 1.5;
-        
-        // Parse hours
+        // Parse basic data
         const creditedHours = utils.parseHM(tripData.creditedHoursHours, tripData.creditedHoursMinutes);
         const dutyHours = utils.parseHM(tripData.tafbHours, tripData.tafbMinutes);
         const tripLength = parseInt(tripData.tripLength) || 1;
         
-        // Calculate pay components
+        // Calculate rates and multipliers
         const baseRate = payData.baseRate;
+        const flagMultiplier = (tripData.whiteFlag ? 1.5 : 1) * (tripData.purpleFlag ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1);
         const effectiveRate = baseRate * flagMultiplier;
-        const basePay = creditedHours * effectiveRate;
         
-        const galleyPay = tripData.galleyPay === 'Yes' ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) : 0;
+        // Calculate pay components
+        const payComponents = {
+            basePay: creditedHours * effectiveRate,
+            galleyPay: tripData.galleyPay === 'Yes' ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) : 0,
+            purserPay: 0,
+            perDiem: dutyHours * (tripData.intlOverride === 'Yes' ? CONSTANTS.INTERNATIONAL_PER_DIEM : CONSTANTS.DOMESTIC_PER_DIEM),
+            languagePay: tripData.languagePay === 'Yes' ? creditedHours * 2.50 : 0,
+            intlOverridePay: tripData.intlPayOverride === 'Yes' ? creditedHours * 2 : 0,
+            holidayPay: 0
+        };
         
-        let purserPay = 0;
+        // Calculate purser pay
         if (tripData.purserPay === 'Yes') {
             const purserUS = parseFloat(tripData.purserUSHours) || 0;
             const purserNonUS = parseFloat(tripData.purserNonUSHours) || 0;
             const rates = { 'Narrow1': [1, 2], 'Narrow2': [2, 3], 'Wide': [3, 4] };
             const [usRate, nonUSRate] = rates[tripData.aircraftType] || rates['Narrow1'];
-            purserPay = purserUS * usRate + purserNonUS * nonUSRate;
+            payComponents.purserPay = purserUS * usRate + purserNonUS * nonUSRate;
         }
         
-        const perDiem = dutyHours * (tripData.intlOverride === 'Yes' ? CONSTANTS.INTERNATIONAL_PER_DIEM : CONSTANTS.DOMESTIC_PER_DIEM);
-        const languagePay = tripData.languagePay === 'Yes' ? creditedHours * 2.50 : 0;
-        const intlOverridePay = tripData.intlPayOverride === 'Yes' ? creditedHours * 2 : 0;
-        
-        let holidayPay = 0;
+        // Calculate holiday pay
         if (tripData.holidayPay === 'Yes' && dutyHours > 0) {
             const holidayHours = parseFloat(tripData.holidayHours) || 0;
-            holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
+            payComponents.holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
         }
         
         // Calculate totals
-        const totalGrossPay = basePay + galleyPay + purserPay + perDiem + holidayPay + languagePay + intlOverridePay;
+        const totalGrossPay = Object.values(payComponents).reduce((sum, val) => sum + val, 0);
         const retirementDeduction = totalGrossPay * (parseFloat(tripData.retirementPercentage) / 100);
-        const netBeforeTax = totalGrossPay - retirementDeduction;
-        const netPayEstimate = netBeforeTax * (1 - parseFloat(tripData.taxRate) / 100);
-        
-        const hourlyValue = creditedHours > 0 ? totalGrossPay / creditedHours : 0;
-        const perDayValue = tripLength > 0 ? totalGrossPay / tripLength : 0;
+        const netPayEstimate = (totalGrossPay - retirementDeduction) * (1 - parseFloat(tripData.taxRate) / 100);
         
         return {
-            baseRate, flagRate: 0, effectiveRate, basePay, galleyPay, purserPay,
-            intlOverridePay, languagePay, perDiem, holidayPay, totalGrossPay,
-            netPayEstimate, hourlyValue, perDayValue
+            ...payComponents,
+            baseRate, effectiveRate, totalGrossPay, netPayEstimate,
+            hourlyValue: creditedHours > 0 ? totalGrossPay / creditedHours : 0,
+            perDayValue: tripLength > 0 ? totalGrossPay / tripLength : 0
         };
     } catch (error) {
         console.error('Error calculating trip pay:', error);
-        return { baseRate: 0, flagRate: 0, effectiveRate: 0, basePay: 0, galleyPay: 0, purserPay: 0, intlOverridePay: 0, languagePay: 0, perDiem: 0, holidayPay: 0, totalGrossPay: 0, netPayEstimate: 0, hourlyValue: 0, perDayValue: 0 };
+        return { baseRate: 0, effectiveRate: 0, basePay: 0, galleyPay: 0, purserPay: 0, intlOverridePay: 0, languagePay: 0, perDiem: 0, holidayPay: 0, totalGrossPay: 0, netPayEstimate: 0, hourlyValue: 0, perDayValue: 0 };
     }
 }
 
@@ -505,11 +588,12 @@ function removeFocusTrap() {
 function renderTripCard(trip) {
     const calculation = calculateTripPay(trip);
     
+    // Card structure
     const card = document.createElement('div');
     card.className = 'trip-card';
     card.dataset.id = trip.id;
     
-    // Add best value badge
+    // Badge
     const badge = document.createElement('div');
     badge.className = 'best-value-badge';
     badge.textContent = 'Best Value';
@@ -525,24 +609,24 @@ function renderTripCard(trip) {
     title.textContent = trip.name || 'Unnamed Trip';
     header.appendChild(title);
     
+    // Action buttons
     const actions = document.createElement('div');
     actions.className = 'trip-card-actions';
     
-    const editBtn = document.createElement('button');
-    editBtn.className = 'trip-card-action edit-trip';
-    editBtn.dataset.id = trip.id;
-    editBtn.textContent = '✏️';
-    editBtn.setAttribute('aria-label', `Edit trip ${trip.name}`);
-    editBtn.addEventListener('click', () => editTrip(trip.id));
-    actions.appendChild(editBtn);
+    const actionButtons = [
+        { text: '✏️', className: 'edit-trip', action: () => editTrip(trip.id), label: `Edit trip ${trip.name}` },
+        { text: '🗑️', className: 'delete-trip', action: () => deleteTrip(trip.id), label: `Delete trip ${trip.name}` }
+    ];
     
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'trip-card-action delete-trip';
-    deleteBtn.dataset.id = trip.id;
-    deleteBtn.textContent = '🗑️';
-    deleteBtn.setAttribute('aria-label', `Delete trip ${trip.name}`);
-    deleteBtn.addEventListener('click', () => deleteTrip(trip.id));
-    actions.appendChild(deleteBtn);
+    actionButtons.forEach(btn => {
+        const button = document.createElement('button');
+        button.className = `trip-card-action ${btn.className}`;
+        button.dataset.id = trip.id;
+        button.textContent = btn.text;
+        button.setAttribute('aria-label', btn.label);
+        button.addEventListener('click', btn.action);
+        actions.appendChild(button);
+    });
     
     header.appendChild(actions);
     card.appendChild(header);
@@ -551,57 +635,61 @@ function renderTripCard(trip) {
     const body = document.createElement('div');
     body.className = 'trip-card-body';
     
-    // Details
+    // Details section
     const details = document.createElement('div');
     details.className = 'trip-details';
     
-    const addDetail = (label, value) => {
-        const row = document.createElement('div');
-        row.className = 'trip-detail';
-        row.innerHTML = `<span class="trip-detail-label">${label}</span><span class="trip-detail-value">${value}</span>`;
-        details.appendChild(row);
-    };
+    const detailData = [
+        { label: 'Pay Year', value: trip.payYear || 'Year 1' },
+        { label: 'Credited Hours', value: `${trip.creditedHoursHours || 0}h ${trip.creditedHoursMinutes || 0}m` },
+        { label: 'TAFB time', value: `${trip.tafbHours || 0}h ${trip.tafbMinutes || 0}m` },
+        { label: 'Trip Length', value: `${trip.tripLength || 1} day${parseInt(trip.tripLength) > 1 ? 's' : ''}` },
+        { label: 'Galley Hours', value: `${trip.galleyHoursHours || 0}h ${trip.galleyHoursMinutes || 0}m`, condition: trip.galleyPay === 'Yes' }
+    ];
     
-    addDetail('Pay Year', trip.payYear || 'Year 1');
-    addDetail('Credited Hours', `${trip.creditedHoursHours || 0}h ${trip.creditedHoursMinutes || 0}m`);
-    addDetail('TAFB time', `${trip.tafbHours || 0}h ${trip.tafbMinutes || 0}m`);
-    addDetail('Trip Length', `${trip.tripLength || 1} day${parseInt(trip.tripLength) > 1 ? 's' : ''}`);
-    
-    if (trip.galleyPay === 'Yes') {
-        addDetail('Galley Hours', `${trip.galleyHoursHours || 0}h ${trip.galleyHoursMinutes || 0}m`);
-    }
+    detailData.forEach(item => {
+        if (!item.condition || item.condition) {
+            const row = document.createElement('div');
+            row.className = 'trip-detail';
+            row.innerHTML = `<span class="trip-detail-label">${item.label}</span><span class="trip-detail-value">${item.value}</span>`;
+            details.appendChild(row);
+        }
+    });
     
     body.appendChild(details);
     
-    // Summary
+    // Summary section
     const summary = document.createElement('div');
     summary.className = 'trip-summary';
     
-    const addSummary = (label, value, highlight = false) => {
-        const item = document.createElement('div');
-        item.className = 'trip-summary-item';
-        if (highlight) item.classList.add('highlight');
-        item.innerHTML = `<span class="trip-summary-label">${label}</span><span class="trip-summary-value">${value}</span>`;
-        summary.appendChild(item);
-    };
+    const summaryData = [
+        { label: 'Base Pay', value: utils.formatCurrency(calculation.basePay) },
+        { label: 'Galley Pay', value: utils.formatCurrency(calculation.galleyPay), condition: calculation.galleyPay > 0 },
+        { label: 'Purser Pay', value: utils.formatCurrency(calculation.purserPay), condition: calculation.purserPay > 0 },
+        { label: 'Intl Override', value: utils.formatCurrency(calculation.intlOverridePay), condition: calculation.intlOverridePay > 0 },
+        { label: 'Language Pay', value: utils.formatCurrency(calculation.languagePay), condition: calculation.languagePay > 0 },
+        { label: 'Per Diem', value: utils.formatCurrency(calculation.perDiem) },
+        { label: 'Holiday Pay', value: utils.formatCurrency(calculation.holidayPay), condition: calculation.holidayPay > 0 },
+        { label: 'Gross Pay', value: utils.formatCurrency(calculation.totalGrossPay), highlight: true },
+        { 
+            label: 'Net Pay Est.', 
+            value: parseFloat(trip.retirementPercentage) > 0 || parseFloat(trip.taxRate) > 0 ? 
+                utils.formatCurrency(calculation.netPayEstimate) : '--', 
+            highlight: true 
+        },
+        { label: 'Hourly Value', value: `${utils.formatCurrency(calculation.hourlyValue)}/hr` },
+        { label: 'Daily Value', value: `${utils.formatCurrency(calculation.perDayValue)}/day` }
+    ];
     
-    addSummary('Base Pay', utils.formatCurrency(calculation.basePay));
-    if (calculation.galleyPay > 0) addSummary('Galley Pay', utils.formatCurrency(calculation.galleyPay));
-    if (calculation.purserPay > 0) addSummary('Purser Pay', utils.formatCurrency(calculation.purserPay));
-    if (calculation.intlOverridePay > 0) addSummary('Intl Override', utils.formatCurrency(calculation.intlOverridePay));
-    if (calculation.languagePay > 0) addSummary('Language Pay', utils.formatCurrency(calculation.languagePay));
-    addSummary('Per Diem', utils.formatCurrency(calculation.perDiem));
-    if (calculation.holidayPay > 0) addSummary('Holiday Pay', utils.formatCurrency(calculation.holidayPay));
-    addSummary('Gross Pay', utils.formatCurrency(calculation.totalGrossPay), true);
-    
-    if (parseFloat(trip.retirementPercentage) > 0 || parseFloat(trip.taxRate) > 0) {
-        addSummary('Net Pay Est.', utils.formatCurrency(calculation.netPayEstimate), true);
-    } else {
-        addSummary('Net Pay Est.', '--', true);
-    }
-    
-    addSummary('Hourly Value', `${utils.formatCurrency(calculation.hourlyValue)}/hr`);
-    addSummary('Daily Value', `${utils.formatCurrency(calculation.perDayValue)}/day`);
+    summaryData.forEach(item => {
+        if (!item.condition || item.condition) {
+            const summaryItem = document.createElement('div');
+            summaryItem.className = 'trip-summary-item';
+            if (item.highlight) summaryItem.classList.add('highlight');
+            summaryItem.innerHTML = `<span class="trip-summary-label">${item.label}</span><span class="trip-summary-value">${item.value}</span>`;
+            summary.appendChild(summaryItem);
+        }
+    });
     
     body.appendChild(summary);
     card.appendChild(body);
@@ -679,61 +767,64 @@ function loadTripsFromLocalStorage() {
 }
 
 // Trip operations
-function addTrip(tripData) {
-    history.saveState('add', 'new');
-    const newTrip = {
-        id: utils.generateId(),
-        color: utils.getRandomColor(),
-        ...tripData
-    };
-    state.trips.push(newTrip);
-    renderTrips();
-    showToast(`Trip "${newTrip.name}" added successfully`, 'success');
-}
-
-function updateTrip(tripId, tripData) {
-    history.saveState('update', tripId);
-    const index = state.trips.findIndex(t => t.id === tripId);
-    if (index !== -1) {
-        const oldColor = state.trips[index].color;
-        state.trips[index] = { ...tripData, id: tripId, color: oldColor };
+const tripOperations = {
+    add: (tripData) => {
+        history.saveState('add', 'new');
+        const newTrip = { id: utils.generateId(), color: utils.getRandomColor(), ...tripData };
+        state.trips.push(newTrip);
         renderTrips();
-        showToast(`Trip "${tripData.name}" updated successfully`, 'success');
-    }
-}
-
-function deleteTrip(tripId) {
-    const index = state.trips.findIndex(t => t.id === tripId);
-    if (index !== -1) {
-        const tripName = state.trips[index].name;
-        if (confirm(`Delete trip "${tripName}"?`)) {
-            history.saveState('delete', tripId);
-            state.trips.splice(index, 1);
+        showToast(`Trip "${newTrip.name}" added successfully`, 'success');
+    },
+    
+    update: (tripId, tripData) => {
+        history.saveState('update', tripId);
+        const index = state.trips.findIndex(t => t.id === tripId);
+        if (index !== -1) {
+            const oldColor = state.trips[index].color;
+            state.trips[index] = { ...tripData, id: tripId, color: oldColor };
             renderTrips();
-            showToast(`Trip "${tripName}" deleted. <a href="#" id="undo-delete">Undo</a>`, 'info');
-            
-            // Setup undo link
-            setTimeout(() => {
-                const undoLink = document.getElementById('undo-delete');
-                if (undoLink) {
-                    undoLink.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        history.undoLastOperation();
-                    });
-                }
-            }, 10);
+            showToast(`Trip "${tripData.name}" updated successfully`, 'success');
+        }
+    },
+    
+    delete: (tripId) => {
+        const index = state.trips.findIndex(t => t.id === tripId);
+        if (index !== -1) {
+            const tripName = state.trips[index].name;
+            if (confirm(`Delete trip "${tripName}"?`)) {
+                history.saveState('delete', tripId);
+                state.trips.splice(index, 1);
+                renderTrips();
+                showToast(`Trip "${tripName}" deleted. <a href="#" id="undo-delete">Undo</a>`, 'info');
+                
+                setTimeout(() => {
+                    const undoLink = document.getElementById('undo-delete');
+                    if (undoLink) {
+                        undoLink.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            history.undoLastOperation();
+                        });
+                    }
+                }, 10);
+            }
+        }
+    },
+    
+    edit: (tripId) => {
+        const trip = state.trips.find(t => t.id === tripId);
+        if (trip) {
+            state.editingTripId = tripId;
+            setFormData(trip);
+            toggleSidePanel(true);
         }
     }
-}
+};
 
-function editTrip(tripId) {
-    const trip = state.trips.find(t => t.id === tripId);
-    if (trip) {
-        state.editingTripId = tripId;
-        setFormData(trip);
-        toggleSidePanel(true);
-    }
-}
+// Convenience functions
+const addTrip = tripOperations.add;
+const updateTrip = tripOperations.update;
+const deleteTrip = tripOperations.delete;
+const editTrip = tripOperations.edit;
 
 // Form submission with validation
 function handleFormSubmit(e) {
@@ -759,29 +850,20 @@ function handleFormSubmit(e) {
 
 // Form validation
 function validateForm() {
-    const requiredFields = [
-        { element: $(ELEMENT_IDS.TRIP_NAME), message: "Trip name is required" },
-        { element: $(ELEMENT_IDS.PAY_YEAR), message: "Pay year is required" },
-        { element: $(ELEMENT_IDS.CREDITED_HOURS_HOURS), message: "Credited hours is required" },
-        { element: $(ELEMENT_IDS.CREDITED_HOURS_MINUTES), message: "Credited minutes is required" },
-        { element: $(ELEMENT_IDS.TAFB_HOURS), message: "TAFB hours is required" },
-        { element: $(ELEMENT_IDS.TAFB_MINUTES), message: "TAFB minutes is required" },
-        { element: $(ELEMENT_IDS.TRIP_LENGTH), message: "Trip length is required" }
-    ];
-    
     let isValid = true;
     let firstInvalidField = null;
     
     // Check required fields
-    requiredFields.forEach(field => {
-        if (!field.element || !field.element.value.trim()) {
-            field.element.style.borderColor = 'var(--danger)';
-            field.element.setAttribute('aria-invalid', 'true');
-            if (!firstInvalidField) firstInvalidField = field.element;
+    FORM_FIELDS.text.forEach(field => {
+        const element = $(field.id);
+        if (element && field.required && !element.value.trim()) {
+            element.style.borderColor = 'var(--danger)';
+            element.setAttribute('aria-invalid', 'true');
+            if (!firstInvalidField) firstInvalidField = element;
             isValid = false;
-        } else {
-            field.element.style.borderColor = '';
-            field.element.removeAttribute('aria-invalid');
+        } else if (element) {
+            element.style.borderColor = '';
+            element.removeAttribute('aria-invalid');
         }
     });
     
@@ -798,64 +880,22 @@ function validateForm() {
     return isValid;
 }
 
-// Export trips
-function exportTrips() {
-    if (state.trips.length === 0) {
-        showToast('No trips to export', 'warning');
-        return;
-    }
-    
-    const data = JSON.stringify({ trips: state.trips, exportDate: new Date().toISOString() }, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'flight_trips_export.json';
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    showToast('Trips exported successfully', 'success');
-}
-
-// Clear all trips
-function clearAllTrips() {
-    if (state.trips.length > 0 && confirm('Clear all trips?')) {
-        state.trips = [];
-        renderTrips();
-        showToast('All trips cleared', 'info');
-    }
-}
-
 // Setup event listeners
 function setupEventListeners() {
     // Form submission
     $(ELEMENT_IDS.TRIP_FORM).addEventListener('submit', handleFormSubmit);
     
     // Button handlers
-    $(ELEMENT_IDS.ADD_TRIP_BTN).addEventListener('click', () => {
-        resetForm();
-        toggleSidePanel(true);
+    Object.entries(BUTTONS).forEach(([id, handler]) => {
+        const button = $(id);
+        if (button) {
+            button.addEventListener('click', handler);
+        }
     });
     
-    $(ELEMENT_IDS.PANEL_CLOSE).addEventListener('click', () => toggleSidePanel(false));
-    $(ELEMENT_IDS.CANCEL_BTN).addEventListener('click', () => toggleSidePanel(false));
-    $(ELEMENT_IDS.EXPORT_BTN).addEventListener('click', exportTrips);
-    $(ELEMENT_IDS.CLEAR_ALL_BTN).addEventListener('click', clearAllTrips);
-    
     // Toggle listeners
-    const toggles = [
-        ELEMENT_IDS.WHITE_FLAG, 
-        ELEMENT_IDS.PURPLE_FLAG, 
-        ELEMENT_IDS.GALLEY_PAY, 
-        ELEMENT_IDS.PURSER_PAY, 
-        ELEMENT_IDS.INTL_OVERRIDE, 
-        ELEMENT_IDS.INTL_PAY_OVERRIDE, 
-        ELEMENT_IDS.LANGUAGE_PAY, 
-        ELEMENT_IDS.HOLIDAY_PAY
-    ];
-    toggles.forEach(id => {
-        const toggle = $(id);
+    FORM_FIELDS.toggles.forEach(field => {
+        const toggle = $(field.id);
         if (toggle) {
             toggle.addEventListener('change', () => {
                 updateToggleLabels();
@@ -865,76 +905,46 @@ function setupEventListeners() {
         }
     });
     
-    // Numeric input validation
-    const numericInputs = [
-        ELEMENT_IDS.CREDITED_HOURS_HOURS, 
-        ELEMENT_IDS.CREDITED_HOURS_MINUTES, 
-        ELEMENT_IDS.TAFB_HOURS, 
-        ELEMENT_IDS.TAFB_MINUTES, 
-        ELEMENT_IDS.GALLEY_HOURS_HOURS, 
-        ELEMENT_IDS.GALLEY_HOURS_MINUTES, 
-        ELEMENT_IDS.PURSER_US_HOURS, 
-        ELEMENT_IDS.PURSER_NON_US_HOURS, 
-        ELEMENT_IDS.HOLIDAY_HOURS, 
-        ELEMENT_IDS.RETIREMENT_PERCENTAGE, 
-        ELEMENT_IDS.TAX_RATE
+    // Input validation patterns
+    const validationPatterns = {
+        numeric: { regex: /^\d*\.?\d*$/, min: 0, max: Infinity },
+        minutes: { regex: /^\d*$/, min: 0, max: 59 },
+        percentage: { regex: /^\d*\.?\d*$/, min: 0, max: 100 },
+        holidayHours: { regex: /^\d*\.?\d*$/, min: 0, max: 24 }
+    };
+    
+    // Apply validation to all inputs
+    const allInputs = [
+        ...FORM_FIELDS.text.filter(f => f.id === ELEMENT_IDS.RETIREMENT_PERCENTAGE || f.id === ELEMENT_IDS.TAX_RATE),
+        ...FORM_FIELDS.numbers,
+        ...FORM_FIELDS.hours.map(f => ({ id: f.minutes, type: 'minutes' }))
     ];
-    numericInputs.forEach(id => {
-        const input = $(id);
-        if (input) {
-            input.addEventListener('input', function() {
-                if (this.value && !/^\d*\.?\d*$/.test(this.value)) {
-                    this.value = this.value.replace(/[^\d.]/g, '');
-                }
-            });
-            
-            input.addEventListener('change', function() {
-                if (this.value === '') this.value = '0';
-                const val = parseFloat(this.value);
-                if (isNaN(val) || val < 0) this.value = '0';
-                validateHours(); // Validate hours when inputs change
-            });
-        }
+    
+    allInputs.forEach(field => {
+        const input = $(field.id);
+        if (!input) return;
+        
+        const pattern = validationPatterns[field.type || 'numeric'];
+        
+        input.addEventListener('input', function() {
+            if (this.value && !pattern.regex.test(this.value)) {
+                this.value = this.value.replace(/[^\d.]/g, '');
+            }
+        });
+        
+        input.addEventListener('change', function() {
+            if (this.value === '') this.value = '0';
+            const val = parseFloat(this.value);
+            if (isNaN(val) || val < pattern.min) this.value = pattern.min.toString();
+            if (val > pattern.max) this.value = pattern.max.toString();
+            validateHours();
+        });
     });
     
-    // Minutes validation
-    const minuteInputs = [
-        ELEMENT_IDS.CREDITED_HOURS_MINUTES, 
-        ELEMENT_IDS.TAFB_MINUTES, 
-        ELEMENT_IDS.GALLEY_HOURS_MINUTES
-    ];
-    minuteInputs.forEach(id => {
-        const input = $(id);
-        if (input) {
-            input.addEventListener('change', function() {
-                const val = parseInt(this.value, 10);
-                if (isNaN(val) || val < 0) this.value = '0';
-                if (val > 59) this.value = '59';
-                validateHours(); // Validate hours when minutes change
-            });
-        }
-    });
-    
-    // Percentage validation
-    const percentageInputs = [
-        ELEMENT_IDS.RETIREMENT_PERCENTAGE, 
-        ELEMENT_IDS.TAX_RATE
-    ];
-    percentageInputs.forEach(id => {
-        const input = $(id);
-        if (input) {
-            input.addEventListener('change', function() {
-                const val = parseFloat(this.value);
-                if (isNaN(val) || val < 0) this.value = '0';
-                if (val > 100) this.value = '100';
-            });
-        }
-    });
-    
-    // Holiday hours validation
-    const holidayHoursInput = $(ELEMENT_IDS.HOLIDAY_HOURS);
-    if (holidayHoursInput) {
-        holidayHoursInput.addEventListener('change', function() {
+    // Special validation for holiday hours
+    const holidayInput = $(ELEMENT_IDS.HOLIDAY_HOURS);
+    if (holidayInput) {
+        holidayInput.addEventListener('change', function() {
             const val = parseFloat(this.value);
             if (isNaN(val) || val < 0) this.value = '0';
             if (val > 24) this.value = '24';
@@ -943,42 +953,30 @@ function setupEventListeners() {
     }
     
     // Keyboard shortcuts
+    const shortcuts = {
+        'Alt+1': () => $(ELEMENT_IDS.TRIP_COMPARISON).focus(),
+        'Alt+2': () => $(ELEMENT_IDS.ADD_TRIP_BTN).focus(),
+        'Ctrl+n': () => { resetForm(); toggleSidePanel(true); },
+        'Escape': () => toggleSidePanel(false),
+        'Ctrl+z': () => history.undoLastOperation(),
+        'Ctrl+s': () => {
+            const sidePanel = $(ELEMENT_IDS.SIDE_PANEL);
+            if (sidePanel && !sidePanel.classList.contains('collapsed')) {
+                $(ELEMENT_IDS.SAVE_TRIP_BTN).click();
+            }
+        }
+    };
+    
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
         
-        if (e.altKey && e.key === '1') {
+        const key = e.key.toLowerCase();
+        const modifier = e.altKey ? 'Alt+' : e.ctrlKey || e.metaKey ? 'Ctrl+' : '';
+        const shortcut = modifier + key;
+        
+        if (shortcuts[shortcut]) {
             e.preventDefault();
-            $(ELEMENT_IDS.TRIP_COMPARISON).focus();
-        }
-        
-        if (e.altKey && e.key === '2') {
-            e.preventDefault();
-            $(ELEMENT_IDS.ADD_TRIP_BTN).focus();
-        }
-        
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-            e.preventDefault();
-            resetForm();
-            toggleSidePanel(true);
-        }
-        
-        if (e.key === 'Escape') {
-            toggleSidePanel(false);
-        }
-        
-        // Ctrl+Z or Command+Z: Undo last operation
-        if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
-            e.preventDefault();
-            history.undoLastOperation();
-        }
-        
-        // Ctrl+S or Command+S: Save current trip
-        if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-            const sidePanel = $(ELEMENT_IDS.SIDE_PANEL);
-            if (sidePanel && !sidePanel.classList.contains('collapsed')) {
-                e.preventDefault();
-                $(ELEMENT_IDS.SAVE_TRIP_BTN).click();
-            }
+            shortcuts[shortcut]();
         }
     });
 }
