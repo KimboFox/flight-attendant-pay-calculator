@@ -84,23 +84,101 @@ const ELEMENT_IDS = {
 };
 
 // Export and clear operations
-const exportTrips = () => {
+const exportTrips = async () => {
     if (state.trips.length === 0) {
         showToast('No trips to export', 'warning');
         return;
     }
-    
-    const data = JSON.stringify({ trips: state.trips, exportDate: new Date().toISOString() }, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'flight_trips_export.json';
-    link.click();
-    URL.revokeObjectURL(url);
-    
-    showToast('Trips exported successfully', 'success');
+    try {
+        showToast('Generating PDF...', 'info');
+
+        // Create a temporary container for the PDF with grid layout
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.top = '0';
+        tempContainer.style.width = '1200px'; // Wide enough for 3 cards
+        tempContainer.style.backgroundColor = 'white';
+        tempContainer.style.padding = '20px';
+        tempContainer.style.fontFamily = 'Arial, sans-serif';
+
+        // Add header
+        const header = document.createElement('div');
+        header.style.textAlign = 'center';
+        header.style.marginBottom = '30px';
+        header.style.borderBottom = '2px solid #3a36e0';
+        header.style.paddingBottom = '20px';
+        header.innerHTML = `
+            <h1 style="color: #3a36e0; margin: 0; font-size: 24px;">Flight Trip Comparison</h1>
+            <p style="color: #666; margin: 10px 0 0 0; font-size: 14px;">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
+        `;
+        tempContainer.appendChild(header);
+
+        // Grid for trip cards
+        const grid = document.createElement('div');
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        grid.style.gap = '24px';
+        grid.style.marginTop = '30px';
+        grid.style.marginBottom = '30px';
+
+        // Clone trip cards for PDF
+        const tripContainer = $(ELEMENT_IDS.TRIP_COMPARISON);
+        const tripCards = tripContainer.querySelectorAll('.trip-card');
+        tripCards.forEach((card) => {
+            const cardClone = card.cloneNode(true);
+            // Remove action buttons for PDF
+            const actions = cardClone.querySelector('.trip-card-actions');
+            if (actions) actions.remove();
+            // Hide best value badge if not the best trip
+            const badge = cardClone.querySelector('.best-value-badge');
+            if (badge && !card.classList.contains('best-trip')) {
+                badge.style.display = 'none';
+            }
+            cardClone.style.margin = '0';
+            cardClone.style.pageBreakInside = 'avoid';
+            grid.appendChild(cardClone);
+        });
+        tempContainer.appendChild(grid);
+
+        // Add to document temporarily
+        document.body.appendChild(tempContainer);
+
+        // Generate PDF
+        const canvas = await html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff'
+        });
+        document.body.removeChild(tempContainer);
+
+        // Create PDF
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth - 20; // 10mm margin on each side
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 10; // 10mm top margin
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pdfHeight - 20);
+        while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pdfHeight - 20);
+        }
+        const fileName = `flight_trip_comparison_${new Date().toISOString().split('T')[0]}.pdf`;
+        pdf.save(fileName);
+        showToast('PDF exported successfully!', 'success');
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        showToast('Error generating PDF. Please try again.', 'error');
+    }
 };
 
 const clearAllTrips = () => {
@@ -229,7 +307,7 @@ const history = {
 // Utility functions
 const utils = {
     formatCurrency: value => {
-        const num = parseFloat(value);
+            const num = parseFloat(value);
         return isNaN(num) ? '$0.00' : '$' + num.toFixed(2);
     },
     
@@ -264,10 +342,10 @@ function validateHours() {
         
         // Check if special hours exceed credited hours
         const isValid = totalSpecialHours <= creditedHours;
-        
+
         // Update validation messages
-        const message = `Special hours (${totalSpecialHours.toFixed(2)}) exceed credited hours (${creditedHours.toFixed(2)})`;
-        
+            const message = `Special hours (${totalSpecialHours.toFixed(2)}) exceed credited hours (${creditedHours.toFixed(2)})`;
+            
         if ($(ELEMENT_IDS.GALLEY_PAY).checked) {
             const validation = $(ELEMENT_IDS.GALLEY_HOURS_VALIDATION);
             if (validation) {
@@ -459,7 +537,7 @@ function calculateTripPay(tripData) {
         const baseRate = payData.baseRate;
         const flagMultiplier = (tripData.whiteFlag ? 1.5 : 1) * (tripData.purpleFlag ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1);
         const effectiveRate = baseRate * flagMultiplier;
-        
+
         // Calculate pay components
         const payComponents = {
             basePay: creditedHours * effectiveRate,
@@ -485,7 +563,7 @@ function calculateTripPay(tripData) {
             const holidayHours = parseFloat(tripData.holidayHours) || 0;
             payComponents.holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
         }
-        
+
         // Calculate totals
         const totalGrossPay = Object.values(payComponents).reduce((sum, val) => sum + val, 0);
         const retirementDeduction = totalGrossPay * (parseFloat(tripData.retirementPercentage) / 100);
@@ -524,7 +602,7 @@ function showToast(message, type = 'info') {
     
     $(ELEMENT_IDS.TOAST_CONTAINER).appendChild(toast);
     
-    setTimeout(() => {
+        setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(-100%)';
         setTimeout(() => toast.remove(), 300);
@@ -600,8 +678,8 @@ function renderTripCard(trip) {
     card.appendChild(badge);
     
     // Header
-    const header = document.createElement('div');
-    header.className = 'trip-card-header';
+        const header = document.createElement('div');
+        header.className = 'trip-card-header';
     header.style.backgroundColor = trip.color || '#3a36e0';
     
     const title = document.createElement('div');
@@ -632,9 +710,9 @@ function renderTripCard(trip) {
     card.appendChild(header);
     
     // Body
-    const body = document.createElement('div');
-    body.className = 'trip-card-body';
-    
+        const body = document.createElement('div');
+        body.className = 'trip-card-body';
+        
     // Details section
     const details = document.createElement('div');
     details.className = 'trip-details';
@@ -714,18 +792,18 @@ function renderTrips() {
             resetForm();
             toggleSidePanel(true);
         });
-        return;
-    }
-    
+            return;
+        }
+        
     // Find best value trip
-    let bestValueTripId = null;
-    let bestMetric = -Infinity;
-    
+        let bestValueTripId = null;
+        let bestMetric = -Infinity;
+        
     state.trips.forEach(trip => {
         const calc = calculateTripPay(trip);
-        if (calc.perDayValue > bestMetric) {
-            bestMetric = calc.perDayValue;
-            bestValueTripId = trip.id;
+                if (calc.perDayValue > bestMetric) {
+                    bestMetric = calc.perDayValue;
+                    bestValueTripId = trip.id;
         }
     });
     
@@ -733,9 +811,9 @@ function renderTrips() {
     state.trips.forEach(trip => {
         const card = renderTripCard(trip);
         if (trip.id === bestValueTripId && state.trips.length > 1) {
-            card.classList.add('best-trip');
-            card.querySelector('.best-value-badge').style.display = 'block';
-        }
+                    card.classList.add('best-trip');
+                    card.querySelector('.best-value-badge').style.display = 'block';
+                }
         container.appendChild(card);
     });
     
@@ -797,15 +875,15 @@ const tripOperations = {
                 renderTrips();
                 showToast(`Trip "${tripName}" deleted. <a href="#" id="undo-delete">Undo</a>`, 'info');
                 
-                setTimeout(() => {
-                    const undoLink = document.getElementById('undo-delete');
-                    if (undoLink) {
+        setTimeout(() => {
+            const undoLink = document.getElementById('undo-delete');
+            if (undoLink) {
                         undoLink.addEventListener('click', (e) => {
-                            e.preventDefault();
+                    e.preventDefault();
                             history.undoLastOperation();
-                        });
-                    }
-                }, 10);
+                });
+            }
+        }, 10);
             }
         }
     },
@@ -850,9 +928,9 @@ function handleFormSubmit(e) {
 
 // Form validation
 function validateForm() {
-    let isValid = true;
-    let firstInvalidField = null;
-    
+        let isValid = true;
+        let firstInvalidField = null;
+        
     // Check required fields
     FORM_FIELDS.text.forEach(field => {
         const element = $(field.id);
@@ -860,24 +938,24 @@ function validateForm() {
             element.style.borderColor = 'var(--danger)';
             element.setAttribute('aria-invalid', 'true');
             if (!firstInvalidField) firstInvalidField = element;
-            isValid = false;
+                isValid = false;
         } else if (element) {
             element.style.borderColor = '';
             element.removeAttribute('aria-invalid');
-        }
-    });
-    
-    // Check hour validations
+            }
+        });
+        
+        // Check hour validations
     if (!validateHours()) {
-        isValid = false;
+            isValid = false;
     }
     
     // Focus first invalid field
-    if (firstInvalidField) {
-        firstInvalidField.focus();
-    }
-    
-    return isValid;
+        if (firstInvalidField) {
+            firstInvalidField.focus();
+        }
+        
+        return isValid;
 }
 
 // Setup event listeners
