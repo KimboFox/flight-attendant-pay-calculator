@@ -632,6 +632,7 @@ input:checked + .toggle-slider:before {
 .trip-card {
     min-width: 300px;
     max-width: 400px;
+    max-height: 38em;
     width: 100%;
     background-color: var(--surface);
     border-radius: var(--radius-lg);
@@ -674,7 +675,7 @@ color: var(--success) !important;
 
 .trip-card-header {
     padding: 16px;
-    background-color: var(--primary);
+    background-color: var(--trip-color, var(--primary));
     color: white;
     display: flex;
     justify-content: space-between;

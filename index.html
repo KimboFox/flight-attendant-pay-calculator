@@ -351,6 +351,49 @@
 
         <button class="btn-add-trip" id="add-trip-btn" aria-label="Add new trip" type="button">+</button>
         <div class="toast-container" id="toast-container"></div>
+        
+        <!-- Hidden templates for dynamic content -->
+        <template id="trip-card-template">
+            <div class="trip-card" data-id="">
+                <div class="best-value-badge">Best Value</div>
+                <div class="trip-card-header">
+                    <div class="trip-title"></div>
+                    <div class="trip-card-actions">
+                        <button class="trip-card-action edit-trip" data-id="" aria-label="Edit trip">✏️</button>
+                        <button class="trip-card-action delete-trip" data-id="" aria-label="Delete trip">🗑️</button>
+                    </div>
+                </div>
+                <div class="trip-card-body">
+                    <div class="trip-details">
+                        <!-- Details will be populated dynamically -->
+                    </div>
+                    <div class="trip-summary">
+                        <!-- Summary will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </template>
+        
+        <template id="trip-detail-template">
+            <div class="trip-detail">
+                <span class="trip-detail-label"></span>
+                <span class="trip-detail-value"></span>
+            </div>
+        </template>
+        
+        <template id="trip-summary-template">
+            <div class="trip-summary-item">
+                <span class="trip-summary-label"></span>
+                <span class="trip-summary-value"></span>
+            </div>
+        </template>
+        
+        <template id="toast-template">
+            <div class="toast">
+                <span class="toast-message"></span>
+                <a href="#" class="toast-undo" style="display: none;">Undo</a>
+            </div>
+        </template>
     </div>
 </body>
 </html>

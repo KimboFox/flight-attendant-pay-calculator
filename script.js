@@ -599,32 +599,7 @@ function calculateTripPay(tripData) {
 }
 
 // Show toast notification with undo support
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    if (message.includes('Undo')) {
-        const parts = message.split(/(<a.*?Undo<\/a>)/);
-        const textNode = document.createTextNode(parts[0]);
-        toast.appendChild(textNode);
-        
-        const undoLink = document.createElement('a');
-        undoLink.href = "#";
-        undoLink.id = "undo-delete";
-        undoLink.textContent = "Undo";
-        toast.appendChild(undoLink);
-    } else {
-        toast.textContent = message;
-    }
-    
-    $(ELEMENT_IDS.TOAST_CONTAINER).appendChild(toast);
-    
-        setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-100%)';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
+const showToast = (message, type = 'info') => templateRenderer.renderToast(message, type);
 
 // Toggle side panel with focus trap
 function toggleSidePanel(show = true) {
@@ -679,131 +654,117 @@ function removeFocusTrap() {
     }
 }
 
-// Render trip card
-function renderTripCard(trip) {
-    const calculation = calculateTripPay(trip);
+// Template-based rendering functions
+const templateRenderer = {
+    getTemplate: (id) => document.getElementById(id).content.cloneNode(true),
     
-    // Card structure
-    const card = document.createElement('div');
-    card.className = 'trip-card';
-    card.dataset.id = trip.id;
-    
-    // Badge
-    const badge = document.createElement('div');
-    badge.className = 'best-value-badge';
-    badge.textContent = 'Best Value';
-    card.appendChild(badge);
-    
-    // Header
-        const header = document.createElement('div');
-        header.className = 'trip-card-header';
-    header.style.backgroundColor = trip.color || '#3a36e0';
-    
-    const title = document.createElement('div');
-    title.className = 'trip-title';
-    title.textContent = trip.name || 'Unnamed Trip';
-    header.appendChild(title);
-    
-    // Action buttons
-    const actions = document.createElement('div');
-    actions.className = 'trip-card-actions';
-    
-    const actionButtons = [
-        { text: '✏️', className: 'edit-trip', action: () => editTrip(trip.id), label: `Edit trip ${trip.name}` },
-        { text: '🗑️', className: 'delete-trip', action: () => deleteTrip(trip.id), label: `Delete trip ${trip.name}` }
-    ];
-    
-    actionButtons.forEach(btn => {
-        const button = document.createElement('button');
-        button.className = `trip-card-action ${btn.className}`;
-        button.dataset.id = trip.id;
-        button.textContent = btn.text;
-        button.setAttribute('aria-label', btn.label);
-        button.addEventListener('click', btn.action);
-        actions.appendChild(button);
-    });
-    
-    header.appendChild(actions);
-    card.appendChild(header);
-    
-    // Body
-        const body = document.createElement('div');
-        body.className = 'trip-card-body';
+    renderTripCard: (trip) => {
+        const calculation = calculateTripPay(trip);
+        const template = templateRenderer.getTemplate('trip-card-template');
+        const card = template.querySelector('.trip-card');
         
-    // Details section
-    const details = document.createElement('div');
-    details.className = 'trip-details';
-    
-    const detailData = [
-        { label: 'Pay Year', value: trip.payYear || 'Year 1' },
-        { label: 'Flags', value: getFlagDisplayText(trip) },
-        { label: 'Credited Hours', value: `${trip.creditedHoursHours || 0}h ${trip.creditedHoursMinutes || 0}m` },
-        { label: 'TAFB time', value: `${trip.tafbHours || 0}h ${trip.tafbMinutes || 0}m` },
-        { label: 'Trip Length', value: `${trip.tripLength || 1} day${parseInt(trip.tripLength) > 1 ? 's' : ''}` },
-        { label: 'Galley Hours', value: `${trip.galleyHoursHours || 0}h ${trip.galleyHoursMinutes || 0}m`, condition: trip.galleyPay === 'Yes' }
-    ];
-    
-    // Filter out conditional items that don't meet their condition
-    const filteredDetailData = detailData.filter(item => {
-        if (item.condition === undefined || item.condition === null) {
-            return true; // Always show items without conditions
-        }
-        return item.condition; // Only show items that meet their condition
-    });
-    
-    filteredDetailData.forEach(item => {
-        const row = document.createElement('div');
-        row.className = 'trip-detail';
-        row.innerHTML = `<span class="trip-detail-label">${item.label}</span><span class="trip-detail-value">${item.value}</span>`;
-        details.appendChild(row);
-    });
-    
-    body.appendChild(details);
-    
-    // Summary section
-    const summary = document.createElement('div');
-    summary.className = 'trip-summary';
-    
-    const summaryData = [
-        { label: 'Base Pay', value: utils.formatCurrency(calculation.basePay) },
-        { label: 'Galley Pay', value: utils.formatCurrency(calculation.galleyPay), condition: calculation.galleyPay > 0 },
-        { label: 'Purser Pay', value: utils.formatCurrency(calculation.purserPay), condition: calculation.purserPay > 0 },
-        { label: 'Intl Override', value: utils.formatCurrency(calculation.intlOverridePay), condition: calculation.intlOverridePay > 0 },
-        { label: 'Language Pay', value: utils.formatCurrency(calculation.languagePay), condition: calculation.languagePay > 0 },
-        { label: 'Per Diem', value: utils.formatCurrency(calculation.perDiem) },
-        { label: 'Holiday Pay', value: utils.formatCurrency(calculation.holidayPay), condition: calculation.holidayPay > 0 },
-        { label: 'Gross Pay', value: utils.formatCurrency(calculation.totalGrossPay), highlight: true },
-        { 
-            label: 'Net Pay Est.', 
-            value: parseFloat(trip.retirementPercentage) > 0 || parseFloat(trip.taxRate) > 0 ? 
-                utils.formatCurrency(calculation.netPayEstimate) : '--', 
-            highlight: true 
-        },
-        { label: 'Hourly Value', value: `${utils.formatCurrency(calculation.hourlyValue)}/hr` },
-        { label: 'Daily Value', value: `${utils.formatCurrency(calculation.perDayValue)}/day` }
-    ];
-    
-            // Filter out zero-value items
-        const filteredSummaryData = summaryData.filter(item => {
-            if (item.condition === undefined || item.condition === null) {
-                return true; // Always show items without conditions
-            }
-            return item.condition; // Only show items that meet their condition
+        // Set basic properties
+        card.dataset.id = trip.id;
+        card.style.setProperty('--trip-color', trip.color || '#3a36e0');
+        
+        // Set title
+        card.querySelector('.trip-title').textContent = trip.name || 'Unnamed Trip';
+        
+        // Set action button IDs
+        const editBtn = card.querySelector('.edit-trip');
+        const deleteBtn = card.querySelector('.delete-trip');
+        editBtn.dataset.id = trip.id;
+        deleteBtn.dataset.id = trip.id;
+        editBtn.addEventListener('click', () => editTrip(trip.id));
+        deleteBtn.addEventListener('click', () => deleteTrip(trip.id));
+        
+        // Populate details
+        const details = card.querySelector('.trip-details');
+        const detailData = [
+            { label: 'Pay Year', value: trip.payYear || 'Year 1' },
+            { label: 'Flags', value: getFlagDisplayText(trip) },
+            { label: 'Credited Hours', value: `${trip.creditedHoursHours || 0}h ${trip.creditedHoursMinutes || 0}m` },
+            { label: 'TAFB time', value: `${trip.tafbHours || 0}h ${trip.tafbMinutes || 0}m` },
+            { label: 'Trip Length', value: `${trip.tripLength || 1} day${parseInt(trip.tripLength) > 1 ? 's' : ''}` },
+            { label: 'Galley Hours', value: `${trip.galleyHoursHours || 0}h ${trip.galleyHoursMinutes || 0}m`, condition: trip.galleyPay === 'Yes' }
+        ];
+        
+        const filteredDetails = detailData.filter(item => 
+            item.condition === undefined || item.condition === null || item.condition
+        );
+        
+        filteredDetails.forEach(item => {
+            const detailTemplate = templateRenderer.getTemplate('trip-detail-template');
+            const detailRow = detailTemplate.querySelector('.trip-detail');
+            detailRow.querySelector('.trip-detail-label').textContent = item.label;
+            detailRow.querySelector('.trip-detail-value').textContent = item.value;
+            details.appendChild(detailRow);
         });
+        
+        // Populate summary
+        const summary = card.querySelector('.trip-summary');
+        const summaryData = [
+            { label: 'Base Pay', value: utils.formatCurrency(calculation.basePay) },
+            { label: 'Galley Pay', value: utils.formatCurrency(calculation.galleyPay), condition: calculation.galleyPay > 0 },
+            { label: 'Purser Pay', value: utils.formatCurrency(calculation.purserPay), condition: calculation.purserPay > 0 },
+            { label: 'Intl Override', value: utils.formatCurrency(calculation.intlOverridePay), condition: calculation.intlOverridePay > 0 },
+            { label: 'Language Pay', value: utils.formatCurrency(calculation.languagePay), condition: calculation.languagePay > 0 },
+            { label: 'Per Diem', value: utils.formatCurrency(calculation.perDiem) },
+            { label: 'Holiday Pay', value: utils.formatCurrency(calculation.holidayPay), condition: calculation.holidayPay > 0 },
+            { label: 'Gross Pay', value: utils.formatCurrency(calculation.totalGrossPay), highlight: true },
+            { 
+                label: 'Net Pay Est.', 
+                value: parseFloat(trip.retirementPercentage) > 0 || parseFloat(trip.taxRate) > 0 ? 
+                    utils.formatCurrency(calculation.netPayEstimate) : '--', 
+                highlight: true 
+            },
+            { label: 'Hourly Value', value: `${utils.formatCurrency(calculation.hourlyValue)}/hr` },
+            { label: 'Daily Value', value: `${utils.formatCurrency(calculation.perDayValue)}/day` }
+        ];
+        
+        const filteredSummary = summaryData.filter(item => 
+            item.condition === undefined || item.condition === null || item.condition
+        );
+        
+        filteredSummary.forEach(item => {
+            const summaryTemplate = templateRenderer.getTemplate('trip-summary-template');
+            const summaryItem = summaryTemplate.querySelector('.trip-summary-item');
+            if (item.highlight) summaryItem.classList.add('highlight');
+            summaryItem.querySelector('.trip-summary-label').textContent = item.label;
+            summaryItem.querySelector('.trip-summary-value').textContent = item.value;
+            summary.appendChild(summaryItem);
+        });
+        
+        return card;
+    },
     
-    filteredSummaryData.forEach(item => {
-        const summaryItem = document.createElement('div');
-        summaryItem.className = 'trip-summary-item';
-        if (item.highlight) summaryItem.classList.add('highlight');
-        summaryItem.innerHTML = `<span class="trip-summary-label">${item.label}</span><span class="trip-summary-value">${item.value}</span>`;
-        summary.appendChild(summaryItem);
-    });
-    
-    body.appendChild(summary);
-    card.appendChild(body);
-    
-    return card;
-}
+    renderToast: (message, type = 'info') => {
+        const template = templateRenderer.getTemplate('toast-template');
+        const toast = template.querySelector('.toast');
+        toast.classList.add(`toast-${type}`);
+        
+        if (message.includes('Undo')) {
+            const parts = message.split(/(<a.*?Undo<\/a>)/);
+            toast.querySelector('.toast-message').textContent = parts[0];
+            const undoLink = toast.querySelector('.toast-undo');
+            undoLink.style.display = 'inline';
+            undoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                history.undoLastOperation();
+            });
+        } else {
+            toast.querySelector('.toast-message').textContent = message;
+        }
+        
+        $(ELEMENT_IDS.TOAST_CONTAINER).appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(-100%)';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+};
 
 // Render all trips
 function renderTrips() {
@@ -839,7 +800,7 @@ function renderTrips() {
     
     // Render each trip
     state.trips.forEach(trip => {
-        const card = renderTripCard(trip);
+        const card = templateRenderer.renderTripCard(trip);
         if (trip.id === bestValueTripId && state.trips.length > 1) {
                     card.classList.add('best-trip');
                     card.querySelector('.best-value-badge').style.display = 'block';
