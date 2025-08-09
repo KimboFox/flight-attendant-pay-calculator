@@ -157,7 +157,7 @@ body {
 }
 
 /* Consolidated mobile header styles */
-@media (max-width: 800px) {
+@media (max-width: 900px) {
     :root {
         --header-height: auto;
     }
@@ -1339,13 +1339,14 @@ input:checked+.toggle-slider:before {
         min-width: 90vw;
         max-width: 98vw;
         margin: 0 auto;
-        max-height: 70vh;
-        /* Better height for portrait mode */
+        max-height: none;
+        /* Override base max-height: 38em to allow cards to grow */
     }
 
     .trip-card-body {
-        max-height: calc(70vh - 80px);
-        /* Adjust body for portrait */
+        max-height: none;
+        overflow-y: visible;
+        /* Override base max-height: calc(38em - 80px) and scrolling behavior */
     }
 
     .side-panel {
