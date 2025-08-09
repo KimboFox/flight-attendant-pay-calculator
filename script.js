@@ -619,50 +619,16 @@ function toggleSidePanel(show = true) {
     if (show) {
         panel.classList.remove('collapsed');
         addBtn.style.display = 'none';
-        document.documentElement.classList.add('sidebar-open');
-        document.body.classList.add('sidebar-open');
         setTimeout(() => $(ELEMENT_IDS.TRIP_NAME).focus(), 100);
         setupFocusTrap();
-        setupSidebarScrollLock();
     } else {
         panel.classList.add('collapsed');
         addBtn.style.display = 'flex';
-        document.documentElement.classList.remove('sidebar-open');
-        document.body.classList.remove('sidebar-open');
         removeFocusTrap();
-        removeSidebarScrollLock();
     }
 }
 
-// Prevent scroll event bubbling when sidebar reaches scroll boundaries
-function setupSidebarScrollLock() {
-    const panel = $(ELEMENT_IDS.SIDE_PANEL);
-    panel.addEventListener('wheel', preventScrollBubble, { passive: false });
-    panel.addEventListener('touchmove', preventScrollBubble, { passive: false });
-}
 
-function removeSidebarScrollLock() {
-    const panel = $(ELEMENT_IDS.SIDE_PANEL);
-    panel.removeEventListener('wheel', preventScrollBubble);
-    panel.removeEventListener('touchmove', preventScrollBubble);
-}
-
-function preventScrollBubble(e) {
-    const panel = e.currentTarget;
-    const { scrollTop, scrollHeight, clientHeight } = panel;
-    
-    // If scrolling up and at the top, prevent default
-    if (e.deltaY < 0 && scrollTop <= 0) {
-        e.preventDefault();
-        return;
-    }
-    
-    // If scrolling down and at the bottom, prevent default
-    if (e.deltaY > 0 && scrollTop + clientHeight >= scrollHeight) {
-        e.preventDefault();
-        return;
-    }
-}
 
 // Focus trap functions
 function setupFocusTrap() {
