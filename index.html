@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>United Flight Attendant Pay Calculator</title>
-    <meta name="description" content="Easily calculate United FA trip pay — including purser, galley, holiday, flag, language, and more. Works on desktop & mobile.">
+    
+    <!-- Preload critical CSS to prevent FOUC -->
+    <link rel="preload" href="styles.css" as="style">
+    <link rel="stylesheet" href="styles.css">
+    <title>Jumpseat Fox</title>
+    <meta name="description" content="Professional tools for flight attendants and aviation professionals by Jumpseat Fox. Works on desktop & mobile.">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kimbofox.github.io/flight-attendant-pay-calculator/">
-    <meta property="og:title" content="United Flight Attendant Pay Calculator">
-    <meta property="og:description" content="Easily calculate United FA trip pay — including purser, galley, holiday, flag, language, and more. Works on desktop & mobile.">
+    <meta property="og:title" content="Jumpseat Fox">
+    <meta property="og:description" content="Professional tools for flight attendants and aviation professionals by Jumpseat Fox. Works on desktop & mobile.">
     <meta property="og:image" content="https://kimbofox.github.io/flight-attendant-pay-calculator/images/og-image.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -18,11 +22,10 @@
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://kimbofox.github.io/flight-attendant-pay-calculator/">
-    <meta property="twitter:title" content="United Flight Attendant Pay Calculator">
-    <meta property="twitter:description" content="Easily calculate United FA trip pay — including purser, galley, holiday, flag, language, and more. Works on desktop & mobile.">
+    <meta property="twitter:title" content="Jumpseat Fox">
+    <meta property="twitter:description" content="Professional tools for flight attendants and aviation professionals by Jumpseat Fox. Works on desktop & mobile.">
     <meta property="twitter:image" content="https://kimbofox.github.io/flight-attendant-pay-calculator/images/og-image.jpg">
 
-    <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
@@ -35,19 +38,15 @@
     </div>
     <div class="app-container">
         <header class="header" id="header">
-            <div class="app-title">
-                <div class="app-logo">FT</div>
-                <h1>Flight Trip Comparison Tool</h1>
+            <div class="header-logo">
+                <img src="AFT Logo.svg" alt="Jumpseat Fox Logo" class="header-logo-image">
+                <h1 class="header-logo-title">Jumpseat Fox</h1>
             </div>
-            <div class="header-kofi" style="flex:1;display:flex;justify-content:center;align-items:center;min-width:180px;">
-                <div id="kofi-widget" style="display:inline-block;"></div>
-                <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
-                <script type='text/javascript'>kofiwidget2.init('🚀 Help me build cool things!', '#d503ff', 'V7V61HOIHV', 'kofi-widget');kofiwidget2.draw();</script>
-            </div>
+
             <div class="header-actions">
-                <button id="clear-all-btn" class="btn btn-outline" aria-label="Clear all trips">Clear All</button>
-                <button id="feedback-btn" class="btn btn-outline" aria-label="Provide feedback" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc8ATwj4UAgkAzudfzTqZFK3Bc2fe-6bJb31ojZ1Ml8okeraA/viewform?usp=header', '_blank')">Feedback</button>
-                <button id="export-btn" class="btn btn-outline" aria-label="Export trips">Export</button>
+                <button id="clear-all-btn" class="btn btn-outline btn-emoji" aria-label="Clear all trips" title="Clear All">🧹</button>
+                <button id="feedback-btn" class="btn btn-outline btn-emoji" aria-label="Provide feedback" title="Feedback" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSc8ATwj4UAgkAzudfzTqZFK3Bc2fe-6bJb31ojZ1Ml8okeraA/viewform?usp=header', '_blank')">💬</button>
+                <button id="export-btn" class="btn btn-outline btn-emoji" aria-label="Export trips" title="Export">📤</button>
             </div>
         </header>
 
@@ -180,8 +179,8 @@
                         <div class="form-group">
                             <label for="aircraft-type">Aircraft Type</label>
                             <select id="aircraft-type" class="form-control">
-                                <option value="Narrow1">A319 / A320 / B737‑700</option>
-                                <option value="Narrow2">B737‑800 / 900 / MAX / B‑757 / A321</option>
+                                <option value="Narrow1">A319 / A320 / B37‑700</option>
+                                <option value="Narrow2">B37‑800‑900‑Max / B57 / A321</option>
                                 <option value="Wide">Widebody</option>
                             </select>
                         </div>
@@ -350,6 +349,14 @@
         </div>
 
         <button class="btn-add-trip" id="add-trip-btn" aria-label="Add new trip" type="button">+</button>
+        
+        <!-- Ko-fi widget positioned in bottom-right corner -->
+        <div class="kofi-widget-container">
+            <div id="kofi-widget"></div>
+            <script type='text/javascript' src='https://storage.ko-fi.com/cdn/widget/Widget_2.js'></script>
+            <script type='text/javascript'>kofiwidget2.init('Help me build cool things! ✈️', '#d503ff', 'V7V61HOIHV', 'kofi-widget');kofiwidget2.draw();</script>
+        </div>
+        
         <div class="toast-container" id="toast-container"></div>
         
         <!-- Hidden templates for dynamic content -->

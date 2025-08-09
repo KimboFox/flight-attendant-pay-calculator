@@ -14,9 +14,9 @@
     --text: #1a202c;
     --text-secondary: #4a5568;
     --border: #e2e8f0;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
-    --shadow: 0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
-    --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
     --radius: 8px;
     --radius-lg: 12px;
     --transition: all 0.2s ease;
@@ -51,8 +51,12 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-html, body {
-    height: 100%;
+html,
+body {
+    min-height: 100%;
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     background-color: var(--background);
     color: var(--text);
     font-size: 16px;
@@ -62,9 +66,10 @@ html, body {
 }
 
 .app-container {
+    min-height: 100vh;
+    height: auto;
     display: flex;
     flex-direction: column;
-    height: 100%;
     max-width: 1920px;
     margin: 0 auto;
 }
@@ -80,41 +85,123 @@ html, body {
     border-bottom: 1px solid var(--border);
     box-shadow: var(--shadow-sm);
     z-index: 10;
-    flex-wrap: wrap;
+    gap: 16px;
+    padding: 10px;
+
+}
+
+/* Header logo */
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-logo-image {
+    width: 56px;
+    height: 56px;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.header-logo-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    .header-logo-title {
+        color: var(--primary-light);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-logo-image {
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    }
+}
+
+/* Ko-fi widget bottom-right positioning */
+.kofi-widget-container {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    z-index: 99;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.kofi-widget-container:hover {
+    opacity: 1;
+}
+
+/* Mobile Ko-fi positioning */
+@media (max-width: 768px) {
+    .kofi-widget-container {
+        bottom: 16px;
+        left: 16px;
+    }
 }
 
 @media (max-width: 480px) {
+    .kofi-widget-container {
+        bottom: 12px;
+        left: 12px;
+        transform: scale(0.9);
+        transform-origin: bottom left;
+    }
+}
+
+/* Consolidated mobile header styles */
+@media (max-width: 800px) {
     :root {
         --header-height: auto;
     }
-    
+
     .header {
         min-height: 64px;
         padding: 12px 16px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 8px;
     }
-}
 
-.app-title {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+    .header-logo {
+        order: 1;
+        min-width: auto;
+        gap: 8px;
+        justify-content: center;
+        width: 100%;
+    }
 
-.app-title h1 {
-    font-size: 1.25rem;
-    font-weight: 600;
-}
+    .header-logo-image {
+        width: 48px;
+        height: 48px;
+    }
 
-.app-logo {
-    width: 36px;
-    height: 36px;
-    background-color: var(--primary);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
+    .header-logo-title {
+        font-size: 1.75rem;
+    }
+
+
+
+    .header-actions {
+        order: 3;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        width: 100%;
+        text-align: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 }
 
 .header-actions {
@@ -125,21 +212,50 @@ html, body {
 
 /* Main content */
 .main-content {
-display: flex;
-flex: 1;
-overflow: hidden;
-position: relative;
+    flex: 1 0 auto;
+    display: flex;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
 }
 
 /* Trip comparison container */
 .trip-comparison {
-    flex: 1;
-    overflow-x: auto;
-    padding: 24px;
+    flex: 1 0 auto;
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+    padding: 24px;
+    overflow: visible;
+    width: 100%;
+}
+
+/* Desktop behavior preserved (>900px) */
+@media (min-width: 901px) {
+    .trip-comparison {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Mobile/tablet behavior (≤900px) */
+@media (max-width: 900px) {
+    .trip-comparison {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 16px 0;
+        margin-bottom: 100px;
+    }
+
+    .trip-card {
+        min-width: 300px;
+        max-width: 400px;
+        width: 100%;
+        margin: 0 auto;
+    }
 }
 
 .no-trips-message {
@@ -152,23 +268,46 @@ position: relative;
     color: var(--text-secondary);
     text-align: center;
     padding: 0 20px;
+    min-height: 60vh;
+    /* Ensure minimum height for proper centering */
+}
+
+
+
+/* Animation for startup logo */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .no-trips-message h2 {
-    margin-bottom: 16px;
+    margin-bottom: 20px;
+    margin-top: 32px;
     font-weight: 600;
+    font-size: 1.5rem;
 }
 
 .no-trips-message p {
-    margin-bottom: 24px;
+    margin-bottom: 32px;
     max-width: 600px;
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
 
 /* Add Trip Panel */
 .side-panel {
     position: absolute;
-    top: 0;                         /* start at the very top of .main-content */
-    bottom: 0;                      /* stretch to the bottom of .main-content */
+    top: 0;
+    /* start at the very top of .main-content */
+    bottom: 0;
+    /* stretch to the bottom of .main-content */
     right: 0;
     width: var(--side-panel-width);
     background-color: var(--surface);
@@ -231,12 +370,12 @@ position: relative;
     .form-group {
         margin-bottom: 12px;
     }
-    
+
     label {
         margin-bottom: 4px;
         font-size: 0.85rem;
     }
-    
+
     /* Override already updated in the new media query for form-control */
 }
 
@@ -270,7 +409,8 @@ label {
     .form-control {
         padding: 14px 16px;
         min-height: 48px;
-        font-size: 16px; /* Prevents iOS zoom on focus */
+        font-size: 16px;
+        /* Prevents iOS zoom on focus */
     }
 }
 
@@ -305,7 +445,7 @@ label {
 }
 
 /* Style for inputs with errors */
-input[aria-invalid="true"], 
+input[aria-invalid="true"],
 select[aria-invalid="true"] {
     border-color: var(--danger);
     box-shadow: 0 0 0 1px var(--danger);
@@ -317,7 +457,7 @@ select[aria-invalid="true"] {
         border-color: #4a5568;
         color: #ffffff;
     }
-    
+
     .form-control:focus {
         border-color: var(--primary-light);
         box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3);
@@ -344,6 +484,7 @@ button:focus-visible,
 }
 
 @media (prefers-color-scheme: dark) {
+
     input:focus-visible,
     select:focus-visible,
     button:focus-visible,
@@ -472,20 +613,20 @@ button:focus-visible,
     }
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
     background-color: var(--primary);
 }
 
-input:focus + .toggle-slider {
+input:focus+.toggle-slider {
     box-shadow: 0 0 1px var(--primary);
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
     transform: translateX(30px);
 }
 
 @media (max-width: 480px) {
-    input:checked + .toggle-slider:before {
+    input:checked+.toggle-slider:before {
         transform: translateX(36px);
     }
 }
@@ -568,7 +709,7 @@ input:checked + .toggle-slider:before {
         border-color: var(--primary);
         color: var(--primary-light);
     }
-    
+
     .btn-outline:hover {
         background-color: rgba(129, 140, 248, 0.2);
     }
@@ -628,6 +769,73 @@ input:checked + .toggle-slider:before {
     width: 100%;
 }
 
+/* Emoji button styles */
+.btn-emoji {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: var(--transition);
+}
+
+.btn-emoji:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow);
+}
+
+/* Tooltip styles for emoji buttons */
+.btn-emoji::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    z-index: 1000;
+}
+
+.btn-emoji:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile adjustments */
+@media (max-width: 480px) {
+    .btn-emoji {
+        width: 48px;
+        height: 48px;
+        font-size: 1.3rem;
+    }
+
+    .btn-emoji::after {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+}
+
+/* Update header-actions gap */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 /* Trip card */
 .trip-card {
     min-width: 300px;
@@ -645,27 +853,27 @@ input:checked + .toggle-slider:before {
 }
 
 .trip-card.best-trip {
-box-shadow:
-0 4px 6px rgba(0,0,0,0.1),
-0 0 0 4px var(--success);
-transition: box-shadow 0.3s ease;
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.1),
+        0 0 0 4px var(--success);
+    transition: box-shadow 0.3s ease;
 }
 
 .trip-card.best-trip .trip-summary-value {
-color: var(--success) !important;
-font-weight: 700;
+    color: var(--success) !important;
+    font-weight: 700;
 }
 
 @media (prefers-color-scheme: dark) {
-.trip-card.best-trip {
-box-shadow:
-0 4px 6px rgba(0,0,0,0.2),
-0 0 0 4px var(--success);
-}
+    .trip-card.best-trip {
+        box-shadow:
+            0 4px 6px rgba(0, 0, 0, 0.2),
+            0 0 0 4px var(--success);
+    }
 
-.trip-card.best-trip .trip-summary-value {
-color: var(--success) !important;
-}
+    .trip-card.best-trip .trip-summary-value {
+        color: var(--success) !important;
+    }
 }
 
 .trip-card:hover {
@@ -729,6 +937,44 @@ color: var(--success) !important;
 .trip-card-body {
     padding: 16px;
     flex: 1;
+    overflow-y: auto;
+    max-height: calc(38em - 80px);
+    /* Account for header height */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+/* Custom scrollbar styling for webkit browsers */
+.trip-card-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.trip-card-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.trip-card-body::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.trip-card-body::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-secondary);
+}
+
+@media (prefers-color-scheme: dark) {
+    .trip-card-body {
+        scrollbar-color: var(--text-secondary) transparent;
+    }
+
+    .trip-card-body::-webkit-scrollbar-thumb {
+        background-color: var(--text-secondary);
+    }
+
+    .trip-card-body::-webkit-scrollbar-thumb:hover {
+        background-color: var(--text);
+    }
 }
 
 .trip-details {
@@ -801,43 +1047,39 @@ color: var(--success) !important;
     .trip-summary-item.highlight .trip-summary-value {
         color: var(--primary-light);
     }
-    
+
     .trip-summary-value {
         color: var(--secondary-light);
     }
 }
 
 .best-value-badge {
-position: absolute;
-top: 12px;
-left: 50%;
-transform: translateX(-50%);
-background-color: var(--success);
-color: #000000;
-padding: 6px 16px;
-border-radius: var(--radius-lg);
-font-size: 0.9rem;
-font-weight: 700;
-box-shadow: var(--shadow-lg);
-z-index: 2;
-display: none;
-transition: var(--transition);
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--success);
+    color: #000000;
+    padding: 6px 16px;
+    border-radius: var(--radius-lg);
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: var(--shadow-lg);
+    z-index: 2;
+    display: none;
+    transition: var(--transition);
 }
 
 @media (prefers-color-scheme: dark) {
-.best-value-badge {
-background-color: var(--success);
-color: #000000;
-box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
-}
+    .best-value-badge {
+        background-color: var(--success);
+        color: #000000;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2), 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 }
 
 
-/* Chart */
-.trip-chart {
-    margin-top: 24px;
-    height: 180px;
-}
+
 
 /* Toast notifications */
 .toast-container {
@@ -872,7 +1114,7 @@ box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
         padding: 10px 14px;
         font-size: 0.8rem;
     }
-    
+
     .toast-container {
         bottom: 16px;
         left: 16px;
@@ -896,6 +1138,7 @@ box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
         transform: translateX(-100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -908,57 +1151,73 @@ box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
         position: fixed;
         top: 0;
         right: 0;
-        height: 100%;
-        width: 90%;
-        max-width: 400px;
+        height: 100vh;
+        width: 100%;
+        max-width: 100%;
         box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        border-left: none;
+        border-radius: 0;
     }
 
     .trip-card {
         min-width: 280px;
         max-width: 100%;
+        max-height: 50vh;
+        /* Limit height on tablets */
     }
-    
-    .header {
-        padding: 0 16px;
+
+    .trip-card-body {
+        max-height: calc(50vh - 80px);
+        /* Adjust body height for tablets */
     }
-    
+
+
+
     .trip-title {
         font-size: 1rem;
-    }
-    
-    .app-title h1 {
-        font-size: 1.1rem;
     }
 }
 
 @media (max-width: 480px) {
+    .side-panel {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0;
+        border: none;
+        padding: 16px;
+    }
+
     .trip-card {
         min-width: 260px;
+        max-height: 60vh;
+        /* Taller on mobile for better visibility */
     }
-    
+
+    .trip-card-body {
+        max-height: calc(60vh - 80px);
+        /* Adjust body height for mobile */
+        padding: 12px;
+        /* Slightly less padding on mobile */
+    }
+
     .trip-comparison {
         padding: 16px;
         gap: 16px;
+        margin-bottom: 100px;
     }
-    
-    .header {
-        padding: 0 12px;
-    }
-    
-    .app-title h1 {
-        font-size: 0.9rem;
-    }
-    
-    .app-logo {
-        width: 30px;
-        height: 30px;
-    }
-    
+
+
+
     .trip-summary-item.highlight .trip-summary-value {
         font-size: 1rem;
     }
-    
+
     .btn-add-trip {
         width: 48px;
         height: 48px;
@@ -968,40 +1227,106 @@ box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 360px) {
+    .side-panel {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        border-radius: 0;
+        border: none;
+        padding: 12px;
+    }
+
     .trip-card {
         min-width: 240px;
+        max-height: 55vh;
+        /* Slightly smaller on very small screens */
     }
-    
+
+    .trip-card-body {
+        max-height: calc(55vh - 80px);
+        /* Adjust for very small screens */
+        padding: 10px;
+        /* Even less padding on very small screens */
+    }
+
     .trip-comparison {
         padding: 12px;
         gap: 12px;
+        margin-bottom: 100px;
     }
-    
-    .app-title h1 {
-        font-size: 0.8rem;
+
+    .header {
+        padding: 8px 12px;
+        gap: 6px;
     }
-    
+
+    .header-logo {
+        gap: 6px;
+    }
+
+    .header-logo-image {
+        width: 28px;
+        height: 28px;
+    }
+
+    .header-logo-title {
+        font-size: 1.1rem;
+    }
+
+
+
     .header-actions {
         gap: 8px;
+        padding: 0;
     }
-    
+
     .btn {
         padding: 10px 14px;
         font-size: 0.9rem;
         min-height: 48px;
     }
-    
-    .trip-card-body {
-        padding: 12px;
-    }
-    
+
     .trip-detail-label,
     .trip-detail-value {
         font-size: 0.85rem;
     }
 }
 
+/* Extra small screens (320px and below) */
+@media (max-width: 320px) {
+    .header {
+        padding: 6px 8px;
+        gap: 4px;
+    }
+
+    .header-logo-title {
+        font-size: 1.5rem;
+    }
+
+    .header-logo-image {
+        width: 40px;
+        height: 40px;
+    }
+
+
+
+    .header-actions {
+        gap: 6px;
+    }
+
+    .btn-emoji {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
 @media (orientation: portrait) {
+
     /* Portrait: stack elements, increase vertical spacing, make touch targets larger */
     .trip-comparison {
         flex-direction: column;
@@ -1009,69 +1334,88 @@ box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
         gap: 24px;
         padding: 20px 8px 80px 8px;
     }
+
     .trip-card {
         min-width: 90vw;
         max-width: 98vw;
         margin: 0 auto;
+        max-height: 70vh;
+        /* Better height for portrait mode */
     }
+
+    .trip-card-body {
+        max-height: calc(70vh - 80px);
+        /* Adjust body for portrait */
+    }
+
     .side-panel {
         width: 100vw;
         max-width: 100vw;
         left: 0;
         right: 0;
-        border-left: none;
-        border-top: 1px solid var(--border);
-        top: auto;
+        top: 0;
         bottom: 0;
-        height: 60vh;
-        border-radius: 16px 16px 0 0;
-        box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
     }
+
     .btn-add-trip {
         bottom: 12px;
         right: 12px;
         width: 64px;
         height: 64px;
     }
+
     .header {
         flex-direction: column;
         align-items: flex-start;
         gap: 8px;
     }
+
 }
+
 @media (orientation: landscape) and (max-width: 900px) {
+
     /* Landscape: use horizontal space, reduce vertical padding, allow more cards per row */
     .trip-comparison {
         flex-direction: row;
         flex-wrap: wrap;
         gap: 12px;
         padding: 8px 24px 24px 24px;
+        margin-bottom: 80px;
         align-items: flex-start;
     }
+
     .trip-card {
         min-width: 320px;
         max-width: 45vw;
         margin: 8px;
     }
+
     .side-panel {
-        width: 60vw;
-        max-width: 480px;
+        width: 80vw;
+        max-width: 100vw;
         height: 100vh;
         top: 0;
         bottom: 0;
         left: auto;
         right: 0;
-        border-radius: 16px 0 0 16px;
-        border-top: none;
-        border-left: 1px solid var(--border);
+        border-radius: 0;
+        border: none;
         box-shadow: var(--shadow-lg);
+        z-index: 1000;
     }
+
     .btn-add-trip {
         bottom: 16px;
         right: 24px;
         width: 56px;
         height: 56px;
     }
+
     .header {
         flex-direction: row;
         align-items: center;
@@ -1081,46 +1425,145 @@ box-shadow: 0 10px 15px rgba(0,0,0,0.2), 0 4px 6px rgba(0,0,0,0.1);
 
 /* Add to <style> section */
 .tooltip-icon {
-  display: inline-block;
-  margin-left: 6px;
-  color: var(--primary-dark, #3a36e0);
-  background: #fff;
-  border-radius: 50%;
-  width: 1.2em;
-  height: 1.2em;
-  font-size: 0.9em;
-  text-align: center;
-  line-height: 1em;
-  cursor: pointer;
-  position: relative;
-  border: 1px solid var(--primary-dark, #3a36e0);
-  font-weight: bold;
-  vertical-align: middle;
+    display: inline-block;
+    margin-left: 6px;
+    color: var(--primary-dark, #3a36e0);
+    background: #fff;
+    border-radius: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    font-size: 0.9em;
+    text-align: center;
+    line-height: 1em;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid var(--primary-dark, #3a36e0);
+    font-weight: bold;
+    vertical-align: middle;
 }
+
 .tooltip-icon:focus,
 .tooltip-icon:hover {
-  background: var(--primary-light, #6d6aff);
-  color: #fff;
-  outline: none;
+    background: var(--primary-light, #6d6aff);
+    color: #fff;
+    outline: none;
 }
+
 .tooltip-text {
-  display: none;
-  position: absolute;
-  left: 50%;
-  top: -38px;
-  transform: translateX(-50%);
-  background: #222;
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.85em;
-  white-space: pre-line;
-  z-index: 100;
-  min-width: 180px;
-  text-align: center;
-  pointer-events: none;
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: auto !important;
+    bottom: 100% !important;
+    /* Force position above the icon */
+    margin-bottom: 10px !important;
+    /* Add gap above icon */
+    transform: translateX(-50%);
+    background: #222;
+    color: #fff;
+    padding: 6px 12px;
+    /* Reduced vertical padding from 8px to 6px */
+    border-radius: 6px;
+    font-size: 0.85em;
+    white-space: pre-line;
+    z-index: 10000;
+    min-width: 200px;
+    max-width: 280px;
+    text-align: center;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid #444;
 }
+
+.tooltip-text::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    /* Arrow at bottom of tooltip */
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #222;
+    /* Arrow points down toward icon */
+}
+
 .tooltip-icon:hover .tooltip-text,
 .tooltip-icon:focus .tooltip-text {
-  display: block;
+    display: block;
+}
+
+/* Mobile touch support for tooltips */
+@media (max-width: 768px) {
+    .tooltip-icon {
+        font-size: 1rem;
+        width: 1.4em;
+        height: 1.4em;
+        line-height: 1.2em;
+        margin-left: 8px;
+        /* Add more space from label text */
+    }
+
+    .tooltip-text {
+        top: auto !important;
+        bottom: 100% !important;
+        /* Force position above the icon on mobile */
+        margin-bottom: 12px !important;
+        /* Add gap above icon on mobile */
+        font-size: 0.8rem;
+        padding: 8px 14px;
+        /* Reduced vertical padding from 10px to 8px */
+        min-width: 220px;
+        max-width: 90vw;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Use click behavior for mobile instead of hover */
+    .tooltip-icon {
+        cursor: pointer;
+    }
+}
+
+/* Dark mode support for tooltips */
+@media (prefers-color-scheme: dark) {
+    .tooltip-text {
+        background: #1a1a1a;
+        color: #ffffff;
+        border-color: #555;
+    }
+
+    .tooltip-text::after {
+        border-top-color: #1a1a1a;
+        /* Dark mode arrow points down toward icon */
+    }
+
+    .tooltip-icon {
+        background: var(--surface);
+        color: var(--primary-light);
+        border-color: var(--primary-light);
+    }
+
+    .tooltip-icon:hover,
+    .tooltip-icon:focus {
+        background: var(--primary-light);
+        color: var(--surface);
+    }
+}
+
+/* Add a class for active tooltips */
+.tooltip-icon.tooltip-active .tooltip-text {
+    display: block;
+}
+
+/* Specific fix for holiday hours tooltip vertical spacing */
+#holiday-hours-group .tooltip-text {
+    white-space: normal;
+    /* Override pre-line to eliminate leading whitespace */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    /* Keep original padding since we're using flexbox centering */
+    line-height: 1.3;
+    /* Tighter line height */
 }

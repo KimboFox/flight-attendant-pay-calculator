@@ -1,4 +1,4 @@
-// Flight Trip Comparison Tool - Spec v2.1
+// Jumpseat Fox - Spec v2.1
 // A tool to compare different flight trips and their compensation
 
 // Centralized element ID configuration
@@ -109,7 +109,7 @@ const exportTrips = async () => {
         header.style.borderBottom = '2px solid #3a36e0';
         header.style.paddingBottom = '20px';
         header.innerHTML = `
-            <h1 style="color: #3a36e0; margin: 0; font-size: 24px;">Flight Trip Comparison</h1>
+            <h1 style="color: #3a36e0; margin: 0; font-size: 24px;">Jumpseat Fox</h1>
             <p style="color: #666; margin: 10px 0 0 0; font-size: 14px;">Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
         `;
         tempContainer.appendChild(header);
@@ -172,7 +172,7 @@ const exportTrips = async () => {
             pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
             heightLeft -= (pdfHeight - 20);
         }
-        const fileName = `flight_trip_comparison_${new Date().toISOString().split('T')[0]}.pdf`;
+        const fileName = `jumpseat_fox_${new Date().toISOString().split('T')[0]}.pdf`;
         pdf.save(fileName);
         showToast('PDF exported successfully!', 'success');
     } catch (error) {
@@ -530,9 +530,9 @@ function toggleConditionalFields() {
                 const isVisible = toggle.checked;
                 group.style.display = isVisible ? 'block' : 'none';
             }
+                }
+            });
         }
-    });
-}
 
 // Calculate trip pay
 function calculateTripPay(tripData) {
@@ -545,17 +545,24 @@ function calculateTripPay(tripData) {
         const dutyHours = utils.parseHM(tripData.tafbHours, tripData.tafbMinutes);
         const tripLength = parseInt(tripData.tripLength) || 1;
         
-
+        // Parse flag settings
+        const whiteFlag = tripData.whiteFlag === 'Yes' || tripData.whiteFlag === true;
+        const purpleFlag = tripData.purpleFlag === 'Yes' || tripData.purpleFlag === true;
+        const purplePremium = parseFloat(tripData.purpleFlagPremium) || 1.5;
         
-        // Calculate rates and multipliers
+        // Calculate rates (separate base from flags)
         const baseRate = payData.baseRate;
-        const flagMultiplier = ((tripData.whiteFlag === 'Yes' || tripData.whiteFlag === true) ? 1.5 : 1) * ((tripData.purpleFlag === 'Yes' || tripData.purpleFlag === true) ? parseFloat(tripData.purpleFlagPremium) || 1.5 : 1);
+        const flagMultiplier = (whiteFlag ? 1.5 : 1) * (purpleFlag ? purplePremium : 1);
         const effectiveRate = baseRate * flagMultiplier;
 
-        // Calculate pay components
+        // Calculate pay components with separated flag pay
         const payComponents = {
-            basePay: creditedHours * effectiveRate,
-            galleyPay: tripData.galleyPay === 'Yes' ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) * effectiveRate : 0,
+            basePay: creditedHours * baseRate, // Pure base pay without flags
+            whiteFlagPay: whiteFlag ? creditedHours * baseRate * 0.5 : 0, // 50% bonus
+            purpleFlagPay: purpleFlag ? creditedHours * baseRate * (purplePremium - 1) : 0, // Premium bonus
+            galleyPay: tripData.galleyPay === 'Yes' ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) * baseRate : 0, // Base rate only for galley
+            galleyWhiteFlagPay: (tripData.galleyPay === 'Yes' && whiteFlag) ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) * baseRate * 0.5 : 0,
+            galleyPurpleFlagPay: (tripData.galleyPay === 'Yes' && purpleFlag) ? utils.parseHM(tripData.galleyHoursHours, tripData.galleyHoursMinutes) * baseRate * (purplePremium - 1) : 0,
             purserPay: 0,
             perDiem: dutyHours * (tripData.intlOverride === 'Yes' ? CONSTANTS.INTERNATIONAL_PER_DIEM : CONSTANTS.DOMESTIC_PER_DIEM),
             languagePay: tripData.languagePay === 'Yes' ? creditedHours * 2.50 : 0,
@@ -573,7 +580,7 @@ function calculateTripPay(tripData) {
             payComponents.purserPay = purserUS * usRate + purserNonUS * nonUSRate;
         }
         
-        // Calculate holiday pay
+        // Calculate holiday pay (using effective rate to maintain current behavior)
         if (tripData.holidayPay === 'Yes' && dutyHours > 0) {
             const holidayHours = parseFloat(tripData.holidayHours) || 0;
             payComponents.holidayPay = (effectiveRate * creditedHours / dutyHours) * holidayHours;
@@ -584,8 +591,6 @@ function calculateTripPay(tripData) {
         const retirementDeduction = totalGrossPay * (parseFloat(tripData.retirementPercentage) / 100);
         const netPayEstimate = (totalGrossPay - retirementDeduction) * (1 - parseFloat(tripData.taxRate) / 100);
         
-
-        
         return {
             ...payComponents,
             baseRate, effectiveRate, totalGrossPay, netPayEstimate,
@@ -594,7 +599,12 @@ function calculateTripPay(tripData) {
         };
     } catch (error) {
         console.error('Error calculating trip pay:', error);
-        return { baseRate: 0, effectiveRate: 0, basePay: 0, galleyPay: 0, purserPay: 0, intlOverridePay: 0, languagePay: 0, perDiem: 0, holidayPay: 0, totalGrossPay: 0, netPayEstimate: 0, hourlyValue: 0, perDayValue: 0 };
+        return { 
+            baseRate: 0, effectiveRate: 0, basePay: 0, whiteFlagPay: 0, purpleFlagPay: 0, 
+            galleyPay: 0, galleyWhiteFlagPay: 0, galleyPurpleFlagPay: 0, purserPay: 0, 
+            intlOverridePay: 0, languagePay: 0, perDiem: 0, holidayPay: 0, 
+            totalGrossPay: 0, netPayEstimate: 0, hourlyValue: 0, perDayValue: 0 
+        };
     }
 }
 
@@ -705,7 +715,11 @@ const templateRenderer = {
         const summary = card.querySelector('.trip-summary');
         const summaryData = [
             { label: 'Base Pay', value: utils.formatCurrency(calculation.basePay) },
+            { label: 'White Flag Pay', value: utils.formatCurrency(calculation.whiteFlagPay), condition: calculation.whiteFlagPay > 0 },
+            { label: 'Purple Flag Pay', value: utils.formatCurrency(calculation.purpleFlagPay), condition: calculation.purpleFlagPay > 0 },
             { label: 'Galley Pay', value: utils.formatCurrency(calculation.galleyPay), condition: calculation.galleyPay > 0 },
+            { label: 'Galley White Flag', value: utils.formatCurrency(calculation.galleyWhiteFlagPay), condition: calculation.galleyWhiteFlagPay > 0 },
+            { label: 'Galley Purple Flag', value: utils.formatCurrency(calculation.galleyPurpleFlagPay), condition: calculation.galleyPurpleFlagPay > 0 },
             { label: 'Purser Pay', value: utils.formatCurrency(calculation.purserPay), condition: calculation.purserPay > 0 },
             { label: 'Intl Override', value: utils.formatCurrency(calculation.intlOverridePay), condition: calculation.intlOverridePay > 0 },
             { label: 'Language Pay', value: utils.formatCurrency(calculation.languagePay), condition: calculation.languagePay > 0 },
@@ -743,8 +757,8 @@ const templateRenderer = {
         const toast = template.querySelector('.toast');
         toast.classList.add(`toast-${type}`);
         
-        if (message.includes('Undo')) {
-            const parts = message.split(/(<a.*?Undo<\/a>)/);
+    if (message.includes('Undo')) {
+        const parts = message.split(/(<a.*?Undo<\/a>)/);
             toast.querySelector('.toast-message').textContent = parts[0];
             const undoLink = toast.querySelector('.toast-undo');
             undoLink.style.display = 'inline';
@@ -752,18 +766,18 @@ const templateRenderer = {
                 e.preventDefault();
                 history.undoLastOperation();
             });
-        } else {
+    } else {
             toast.querySelector('.toast-message').textContent = message;
-        }
-        
-        $(ELEMENT_IDS.TOAST_CONTAINER).appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(-100%)';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
     }
+    
+        $(ELEMENT_IDS.TOAST_CONTAINER).appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-100%)';
+            setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 };
 
 // Render all trips
@@ -866,15 +880,15 @@ const tripOperations = {
                 renderTrips();
                 showToast(`Trip "${tripName}" deleted. <a href="#" id="undo-delete">Undo</a>`, 'info');
                 
-                setTimeout(() => {
-                    const undoLink = document.getElementById('undo-delete');
-                    if (undoLink) {
+        setTimeout(() => {
+            const undoLink = document.getElementById('undo-delete');
+            if (undoLink) {
                         undoLink.addEventListener('click', (e) => {
-                            e.preventDefault();
+                    e.preventDefault();
                             history.undoLastOperation();
-                        });
-                    }
-                }, 10);
+                });
+            }
+        }, 10);
             }
         }
     },
@@ -1049,9 +1063,46 @@ function setupEventListeners() {
 function init() {
     loadTripsFromLocalStorage();
     setupEventListeners();
+    setupTooltipHandlers();
     updateToggleLabels();
     toggleConditionalFields();
     renderTrips();
+}
+
+// Setup tooltip click handlers for mobile
+function setupTooltipHandlers() {
+    document.addEventListener('click', (event) => {
+        // Check if clicked element is a tooltip icon
+        if (event.target.classList.contains('tooltip-icon')) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Close any other open tooltips
+            document.querySelectorAll('.tooltip-icon.tooltip-active').forEach(tooltip => {
+                if (tooltip !== event.target) {
+                    tooltip.classList.remove('tooltip-active');
+                }
+            });
+            
+            // Toggle this tooltip
+            event.target.classList.toggle('tooltip-active');
+            
+        } else {
+            // Close all tooltips when clicking elsewhere
+            document.querySelectorAll('.tooltip-icon.tooltip-active').forEach(tooltip => {
+                tooltip.classList.remove('tooltip-active');
+            });
+        }
+    });
+    
+    // Handle keyboard interaction for accessibility
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.tooltip-icon.tooltip-active').forEach(tooltip => {
+                tooltip.classList.remove('tooltip-active');
+            });
+        }
+    });
 }
 
 // Start when DOM is ready
